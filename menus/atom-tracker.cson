@@ -2,21 +2,19 @@
 'context-menu':
   'atom-text-editor': [
     {
-      'label': 'Pivotal Tracker'
-      'submenu': [
-        {'label': 'Create in Icebox', 'atom-tracker:create-in-icebox'}
-      ]
+      'label': 'Atom Tracker'
+      'submenu': []
     }
   ]
 'menu': [
   {
     'label': 'Packages'
     'submenu': [
-      'label': 'atom-tracker'
+      'label': 'Atom Tracker'
       'submenu': [
         {
-          'label': 'Toggle'
-          'command': 'atom-tracker:toggle'
+          'label': 'Create Project Configuration File'
+          'atom-tracker:create-config'
         }
       ]
     ]

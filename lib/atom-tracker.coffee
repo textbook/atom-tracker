@@ -1,37 +1,45 @@
-AtomTrackerView = require './atom-tracker-view'
 {CompositeDisposable} = require 'atom'
 
+CreateConfigView = require './create-config-view'
+FileUtils = require './file-utils'
+
 module.exports = AtomTracker =
-  config:
-    trackerId:
-      type: 'integer'
-      minimum: 1
-  atomTrackerView: null
-  modalPanel: null
+  currentProject: {}
+  state: null
   subscriptions: null
 
+  # Configuration
+  trackerToken: ''
+  projectConfigFile: ''
+
+  config:
+    trackerToken:
+      title: 'Tracker API Token'
+      type: 'string'
+      description: 'Your access token for the Tracker API. Find it online at ' +
+        'https://www.pivotaltracker.com/profile.'
+      default: ''
+    projectConfigFile:
+      title: 'Project-specific configuration file name'
+      type: 'string'
+      description: 'This file will store the project-specific configuration, ' +
+        'e.g. project Tracker ID, in your root project directory.'
+      default: '.tracker.cson'
+
   activate: (state) ->
-    @atomTrackerView = new AtomTrackerView(state.atomTrackerViewState)
-    @modalPanel = atom.workspace.addModalPanel(item: @atomTrackerView.getElement(), visible: false)
-
-    # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
+    @state = state
     @subscriptions = new CompositeDisposable
+    @subscriptions.add atom.commands.add 'atom-workspace',
+      'atom-tracker:create-config': => @createProjectConfig()
 
-    # Register command that toggles this view
-    @subscriptions.add atom.commands.add 'atom-workspace', 'atom-tracker:toggle': => @toggle()
+  createProjectConfig: ->
+    view = new CreateConfigView(@state.atomTrackerViewState)
+    view.reveal()
 
   deactivate: ->
-    @modalPanel.destroy()
     @subscriptions.dispose()
-    @atomTrackerView.destroy()
+    @atomTrackerView.destroy() if @atomTrackerView
 
   serialize: ->
-    atomTrackerViewState: @atomTrackerView.serialize()
-
-  toggle: ->
-    console.log 'AtomTracker was toggled!'
-
-    if @modalPanel.isVisible()
-      @modalPanel.hide()
-    else
-      @modalPanel.show()
+    if @atomTrackerView
+      atomTrackerViewState: @atomTrackerView.serialize()

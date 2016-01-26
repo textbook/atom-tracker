@@ -3,16 +3,18 @@
   "main": "./lib/atom-tracker",
   "version": "0.0.1",
   "description": "Integrate Pivotal Tracker with Atom.",
-  "keywords": [
-  ],
-  "activationCommands": {
-    "atom-workspace": "atom-tracker:toggle"
-  },
+  "keywords": [],
   "repository": "https://github.com/textbook/atom-tracker",
   "license": "MIT",
   "engines": {
     "atom": ">=1.0.0 <2.0.0"
   },
   "dependencies": {
+    "atom-space-pen-views": "^2.0.0",
+    "season": "^5.3.0"
+  },
+  "devDependencies": {
+    "nock": "^5.2.1",
+    "temp": "~0.6.0"
   }
 }
