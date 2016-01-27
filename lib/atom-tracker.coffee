@@ -8,10 +8,6 @@ module.exports = AtomTracker =
   state: null
   subscriptions: null
 
-  # Configuration
-  trackerToken: ''
-  projectConfigFile: ''
-
   config:
     trackerToken:
       title: 'Tracker API Token'
@@ -31,10 +27,17 @@ module.exports = AtomTracker =
     @subscriptions = new CompositeDisposable
     @subscriptions.add atom.commands.add 'atom-workspace',
       'atom-tracker:create-config': => @createProjectConfig()
+      @subscriptions.add atom.commands.add 'atom-workspace',
+        'atom-tracker:read-config': => @readProjectConfig()
 
   createProjectConfig: ->
-    view = new CreateConfigView(@state.atomTrackerViewState)
-    view.reveal()
+    new CreateConfigView(@state.atomTrackerViewState).reveal()
+
+  readProjectConfig: ->
+    FileUtils.readCsonFile FileUtils.rootFilepath(),
+      ((results) => @currentProject = results.currentProject),
+      ((error) -> atom.notifications.addError 'No project configuration file ' +
+        'found.', {icon: 'file-text', detail: error.stack})
 
   deactivate: ->
     @subscriptions.dispose()

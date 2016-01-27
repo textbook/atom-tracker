@@ -13,8 +13,13 @@
       'label': 'Atom Tracker'
       'submenu': [
         {
-          'label': 'Create Project Configuration File'
+          'label': 'Link Project'
           'atom-tracker:create-config'
+        }
+        {'type': 'separator'}
+        {
+          'label': 'Read Project Configuration File'
+          'atom-tracker:read-config'
         }
       ]
     ]
