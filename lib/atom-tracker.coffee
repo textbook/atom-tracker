@@ -13,7 +13,7 @@ module.exports = AtomTracker =
       title: 'Tracker API Token'
       type: 'string'
       description: 'Your access token for the Tracker API. Find it online at ' +
-        'https://www.pivotaltracker.com/profile.'
+        'https://www.pivotaltracker.com/profile#api.'
       default: ''
     projectConfigFile:
       title: 'Project-specific configuration file name'
