@@ -24,8 +24,8 @@ module.exports = class CreateConfigView extends SelectListView
   getFilterKey: -> 'project_name'
 
   confirmed: (item) ->
-    FileUtils.writeCsonFile null, {currentProject: item},
-      'Failed to write configuration file.',
-    @panel.hide()
+    TrackerUtils.getProjectDetails item, (data) =>
+      FileUtils.writeCsonFile null, {currentProject: data}, 'Failed to write configuration file.',
+        @panel.hide()
 
   cancelled: -> @panel.hide()
