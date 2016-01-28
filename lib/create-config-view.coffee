@@ -5,6 +5,7 @@ FileUtils = require './file-utils'
 TrackerUtils = require './tracker-utils'
 
 module.exports = class CreateConfigView extends SelectListView
+  callback: null
   panel: null
 
   initialize: ->
@@ -14,7 +15,8 @@ module.exports = class CreateConfigView extends SelectListView
     TrackerUtils.getProjects ((projects) => @setItems projects),
       (=> @panel.hide() if @panel)
 
-  reveal: ->
+  reveal: (successCallback) ->
+    @callback = successCallback
     @panel ?= atom.workspace.addModalPanel(item: this)
     @panel.show()
     @focusFilterEditor()
@@ -24,8 +26,9 @@ module.exports = class CreateConfigView extends SelectListView
   getFilterKey: -> 'project_name'
 
   confirmed: (item) ->
+    @panel.hide()
     TrackerUtils.getProjectDetails item, (data) =>
-      FileUtils.writeCsonFile null, {currentProject: data}, 'Failed to write configuration file.',
-        @panel.hide()
+      FileUtils.writeCsonFile null, {currentProject: data, membershipSummary: item},
+        'Failed to write configuration file.', @callback
 
   cancelled: -> @panel.hide()

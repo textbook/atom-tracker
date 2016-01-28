@@ -13,13 +13,15 @@ module.exports =
 
   readCsonFile: (path, success, failure) ->
     CSON.readFile path, (error, results) ->
-      if error
+      if error and failure
         failure error
-      else
+      else if success
         success results
 
-  writeCsonFile: (path, content, errMessage) ->
+  writeCsonFile: (path, content, errMessage, success) ->
     CSON.writeFile @rootFilepath(path), content, (error) ->
       if error
         atom.notifications.addError errMessage or 'Failed to write file.',
           {detail: error.stack}
+      else if success
+        success()

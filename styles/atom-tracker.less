@@ -6,3 +6,16 @@
 
 .atom-tracker {
 }
+
+// (Optional) status bar contains graph icon and link to project by name
+atom-tracker-status {
+  margin: 0 @component-padding;
+
+  a {
+    margin-left: @component-icon-padding;
+  }
+
+  &[hidden] {
+    display: none;
+  }
+}

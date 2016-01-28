@@ -1,7 +1,7 @@
 {
   "name": "atom-tracker",
   "main": "./lib/atom-tracker",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Integrate Pivotal Tracker with Atom.",
   "keywords": [],
   "repository": "https://github.com/textbook/atom-tracker",
@@ -16,5 +16,12 @@
   "devDependencies": {
     "nock": "^5.2.1",
     "temp": "~0.6.0"
+  },
+  "consumedServices": {
+    "status-bar": {
+      "versions": {
+        "^1.0.0": "consumeStatusBar"
+      }
+    }
   }
 }
