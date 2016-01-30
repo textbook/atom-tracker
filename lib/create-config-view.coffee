@@ -10,7 +10,7 @@ module.exports = class CreateConfigView extends SelectListView
 
   initialize: ->
     super
-    @addClass('overlay from-top')
+    @addClass('overlay from-top tracker-project-list')
     @setLoading 'Fetching project data'
     TrackerUtils.getProjects ((projects) => @setItems projects),
       (=> @panel.hide() if @panel)
@@ -21,14 +21,19 @@ module.exports = class CreateConfigView extends SelectListView
     @panel.show()
     @focusFilterEditor()
 
-  viewForItem: (item) -> "<li>#{item.project_name}</li>"
+  viewForItem: (item) ->
+    "<li class=\"tracker-project\">" +
+    "  <span class=\"icon icon-graph\"></span>" +
+    "  <span>#{item.project_name}</span>" +
+    "  <span class=\"text-subtle project-role\">#{item.role}</span>" +
+    "</li>"
 
   getFilterKey: -> 'project_name'
 
   confirmed: (item) ->
     @panel.hide()
     TrackerUtils.getProjectDetails item, (data) =>
-      FileUtils.writeCsonFile null, {currentProject: data, membershipSummary: item},
+      FileUtils.writeCsonFile null, {project: data, membership_summary: item},
         'Failed to write configuration file.', @callback
 
   cancelled: -> @panel.hide()

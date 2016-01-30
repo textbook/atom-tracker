@@ -7,9 +7,24 @@
 .atom-tracker {
 }
 
+.tracker-project-list {
+  .project-role {
+    margin-left: @component-icon-padding;
+  }
+}
+
 // (Optional) status bar contains graph icon and link to project by name
 atom-tracker-status {
   margin: 0 @component-padding;
+
+  .badge {
+    margin-left: @component-icon-padding;
+    vertical-align: baseline;
+
+    &[hidden] {
+      display: none;
+    }
+  }
 
   a {
     margin-left: @component-icon-padding;

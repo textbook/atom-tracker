@@ -5,7 +5,7 @@ FileUtils = require './file-utils'
 StatusBarView = require './status-bar-view'
 
 module.exports = AtomTracker =
-  project: null
+  projectData: null
   state: null
   statusBarTile: null
   subscriptions: null
@@ -30,11 +30,17 @@ module.exports = AtomTracker =
       order: 3
       title: 'Colorize Status Bar'
       type: 'boolean'
+    velocityStatusBar:
+      default: false
+      description: 'Show the project\'s current velocity in the status bar.'
+      order: 4
+      title: 'Show Velocity in Status Bar'
+      type: 'boolean'
     projectConfigFile:
       default: '.tracker.cson'
       description: 'This file will store the project-specific configuration, ' +
         'e.g. project Tracker ID, in your root project directory.'
-      order: 4
+      order: 5
       title: 'Project Configuration File Name'
       type: 'string'
 
@@ -44,16 +50,20 @@ module.exports = AtomTracker =
     @subscriptions.add atom.commands.add 'atom-workspace',
       'atom-tracker:create-config': => @createProjectConfig()
     atom.config.onDidChange 'atom-tracker.showStatusBar', ({newValue, oldValue}) =>
-      @statusBarTile?.getItem().display newValue and @project
+      @statusBarTile?.getItem().display newValue and @projectData
     atom.config.onDidChange 'atom-tracker.colorizeStatusBar', ({newValue, oldValue}) =>
-      @statusBarTile?.getItem().updateContent @project.membershipSummary if @project
+      if @projectData
+        @statusBarTile?.getItem().updateContent @projectData
+    atom.config.onDidChange 'atom-tracker.velocityStatusBar', ({newValue, oldValue}) =>
+      if @projectData
+        @statusBarTile?.getItem().updateContent @projectData
     @readProjectConfig()
 
   consumeStatusBar: (statusBar) ->
     @statusBarTile = statusBar.addRightTile item: new StatusBarView, priority: 5
-    if @currentProject
+    if @projectData
       @statusBarTile.getItem().display atom.config.get 'atom-tracker.showStatusBar'
-      @statusBarTile.getItem().updateContent @project.membershipSummary if @project
+      @statusBarTile.getItem().updateContent @projectData
     else
       @statusBarTile.getItem().display false
 
@@ -65,9 +75,9 @@ module.exports = AtomTracker =
     paths = atom.project.getPaths()
     if paths.length > 0
       FileUtils.readCsonFile FileUtils.rootFilepath(), (results) =>
-        @project = results
+        @projectData = results
         tile = @statusBarTile?.getItem()
-        tile.updateContent results.membershipSummary
+        tile.updateContent results
         tile.display atom.config.get 'atom-tracker.showStatusBar'
 
   deactivate: ->

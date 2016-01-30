@@ -14,8 +14,7 @@
     "season": "^5.3.0"
   },
   "devDependencies": {
-    "nock": "^5.2.1",
-    "temp": "~0.6.0"
+    "nock": "^5.2.1"
   },
   "consumedServices": {
     "status-bar": {

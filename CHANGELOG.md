@@ -2,6 +2,10 @@
 * Every feature added
 * Every bug fixed
 
+## 0.0.3 - Added Velocity to Status Bar
+* Shows current velocity badge
+* Configurable in Settings
+
 ## 0.0.2 - Added Status Bar
 * Shows project name
 * Styled with project color
