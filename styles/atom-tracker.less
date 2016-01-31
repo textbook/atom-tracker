@@ -13,9 +13,33 @@
   }
 }
 
+.tracker-story-list {
+  .badge {
+    margin-left: @component-icon-padding;
+    vertical-align: baseline;
+  }
+
+  // Use Tracker theme colours for story type
+  .icon-bug {
+    color: #d87350;
+  }
+
+  .icon-gear {
+    color: #939592;
+  }
+
+  .icon-star {
+    color: #e0c85e;
+  }
+}
+
 // (Optional) status bar contains graph icon and link to project by name
 atom-tracker-status {
   margin: 0 @component-padding;
+
+  a {
+    margin-left: @component-icon-padding;
+  }
 
   .badge {
     margin-left: @component-icon-padding;
@@ -24,10 +48,6 @@ atom-tracker-status {
     &[hidden] {
       display: none;
     }
-  }
-
-  a {
-    margin-left: @component-icon-padding;
   }
 
   &[hidden] {

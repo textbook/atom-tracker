@@ -1,6 +1,6 @@
 CSON = require 'season'
 
-FileUtils = require '../lib/file-utils'
+FileUtils = require '../../lib/services/file-utils'
 
 describe 'FileUtils', ->
 

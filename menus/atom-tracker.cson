@@ -18,8 +18,8 @@
         }
         {'type': 'separator'}
         {
-          'label': 'Read Project Configuration File'
-          'atom-tracker:read-config'
+          'label': 'Select Next Story'
+          'atom-tracker:next-story'
         }
       ]
     ]

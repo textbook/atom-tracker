@@ -1,8 +1,8 @@
 {SelectListView} = require 'atom-space-pen-views'
 
 
-FileUtils = require './file-utils'
-TrackerUtils = require './tracker-utils'
+FileUtils = require '../services/file-utils'
+TrackerUtils = require '../services/tracker-utils'
 
 module.exports = class CreateConfigView extends SelectListView
   callback: null
@@ -11,9 +11,9 @@ module.exports = class CreateConfigView extends SelectListView
   initialize: ->
     super
     @addClass('overlay from-top tracker-project-list')
-    @setLoading 'Fetching project data'
+    @setLoading 'Fetching project list...'
     TrackerUtils.getProjects ((projects) => @setItems projects),
-      (=> @panel.hide() if @panel)
+      (=> @panel?.hide())
 
   reveal: (successCallback) ->
     @callback = successCallback
@@ -31,7 +31,7 @@ module.exports = class CreateConfigView extends SelectListView
   getFilterKey: -> 'project_name'
 
   confirmed: (item) ->
-    @panel.hide()
+    @panel?.hide()
     TrackerUtils.getProjectDetails item, (data) =>
       FileUtils.writeCsonFile null, {project: data, membership_summary: item},
         'Failed to write configuration file.', @callback

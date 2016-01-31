@@ -1,8 +1,9 @@
 {CompositeDisposable} = require 'atom'
 
-CreateConfigView = require './create-config-view'
-FileUtils = require './file-utils'
-StatusBarView = require './status-bar-view'
+CreateConfigView = require './views/create-config-view'
+FileUtils = require './services/file-utils'
+NextStoryView = require './views/next-story-view'
+StatusBarView = require './views/status-bar-view'
 
 module.exports = AtomTracker =
   projectData: null
@@ -36,19 +37,29 @@ module.exports = AtomTracker =
       order: 4
       title: 'Show Velocity in Status Bar'
       type: 'boolean'
+    showFeatureEstimate:
+      default: true
+      description: 'Show features\' estimated points when selecting a story.'
+      order: 5
+      title: 'Show Estimates in Story Selector'
+      type: 'boolean'
     projectConfigFile:
       default: '.tracker.cson'
       description: 'This file will store the project-specific configuration, ' +
         'e.g. project Tracker ID, in your root project directory.'
-      order: 5
+      order: 6
       title: 'Project Configuration File Name'
       type: 'string'
 
   activate: (state) ->
     @state = state
+    # Set up Atom Tracker commands
     @subscriptions = new CompositeDisposable
     @subscriptions.add atom.commands.add 'atom-workspace',
       'atom-tracker:create-config': => @createProjectConfig()
+    @subscriptions.add atom.commands.add 'atom-workspace',
+      'atom-tracker:next-story': => @selectNextStory()
+    # Monitor configuration changes
     atom.config.onDidChange 'atom-tracker.showStatusBar', ({newValue, oldValue}) =>
       @statusBarTile?.getItem().display newValue and @projectData
     atom.config.onDidChange 'atom-tracker.colorizeStatusBar', ({newValue, oldValue}) =>
@@ -57,6 +68,7 @@ module.exports = AtomTracker =
     atom.config.onDidChange 'atom-tracker.velocityStatusBar', ({newValue, oldValue}) =>
       if @projectData
         @statusBarTile?.getItem().updateContent @projectData
+    # Initialise with current project data
     @readProjectConfig()
 
   consumeStatusBar: (statusBar) ->
@@ -66,6 +78,9 @@ module.exports = AtomTracker =
       @statusBarTile.getItem().updateContent @projectData
     else
       @statusBarTile.getItem().display false
+
+  selectNextStory: ->
+    new NextStoryView(@projectData.project, @state.atomTrackerViewState).reveal()
 
   createProjectConfig: ->
     new CreateConfigView(@state.atomTrackerViewState).reveal =>
