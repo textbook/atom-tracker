@@ -61,15 +61,17 @@ module.exports = AtomTracker =
       'atom-tracker:next-story': => @selectNextStory()
     # Monitor configuration changes
     atom.config.onDidChange 'atom-tracker.showStatusBar', ({newValue, oldValue}) =>
-      @statusBarTile?.getItem().display newValue and @projectData
+      @srefreshStatusBar()
     atom.config.onDidChange 'atom-tracker.colorizeStatusBar', ({newValue, oldValue}) =>
-      if @projectData
-        @statusBarTile?.getItem().updateContent @projectData
+      @refreshStatusBar()
     atom.config.onDidChange 'atom-tracker.velocityStatusBar', ({newValue, oldValue}) =>
-      if @projectData
-        @statusBarTile?.getItem().updateContent @projectData
+      @refreshStatusBar()
     # Initialise with current project data
     @readProjectConfig()
+
+  refreshStatusBar: ->
+    if @projectData
+      @statusBarTile?.getItem().updateContent @projectData
 
   consumeStatusBar: (statusBar) ->
     @statusBarTile = statusBar.addRightTile item: new StatusBarView, priority: 5
