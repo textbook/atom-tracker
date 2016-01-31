@@ -49,19 +49,30 @@ describe 'TrackerUtils', ->
         TrackerUtils.makeGetRequest @options, '', null, spiedFailure
       waitsFor (-> done), 'calls to be complete', 100
 
-    it 'should show a warning if authentication fails', ->
+    it 'should show an error if the request times out', ->
       done = false
-      errMsg = 'foo bar baz'
-      spyOn(atom.notifications, 'addWarning').andCallFake (arg, opts) ->
-        expect(arg).toEqual(TrackerUtils.AUTH_FAIL_MSG)
-        expect(opts).toEqual({icon: 'lock'})
+      spyOn(atom.notifications, 'addError').andCallFake (arg, opts) ->
+        expect(arg).toEqual 'Failed to connect to Pivotal Tracker.'
+        expect(opts).toEqual {icon: 'radio-tower'}
+        done = true
+      nock(@url, {reqheaders: @options.headers}).get(@options.path)
+        .socketDelay(2000).reply(500)
+      runs ->
+        TrackerUtils.makeGetRequest @options, null, null, null
+      waitsFor (-> done), 'calls to be complete'
+
+    it 'should show an error if authentication fails', ->
+      done = false
+      spyOn(atom.notifications, 'addError').andCallFake (arg, opts) ->
+        expect(arg).toEqual TrackerUtils.AUTH_FAIL_MSG
+        expect(opts).toEqual {icon: 'lock'}
         done = true
       req = nock(@url, {reqheaders: @options.headers}).get(@options.path).reply(403)
       runs ->
         TrackerUtils.makeGetRequest @options, '', null, null
       waitsFor (-> done), 'calls to be complete', 100
 
-    it 'should show an error if anything else fails', ->
+    it 'should show a generic error if anything else fails', ->
       done = false
       errMsg = 'whoops!'
       error = spyOn(atom.notifications, 'addError').andCallFake (arg) ->
@@ -110,13 +121,59 @@ describe 'TrackerUtils', ->
       req.done()
 
   describe 'startStory method', ->
+    putPath = null
+    story = null
 
     beforeEach ->
       @options.headers['Content-Type'] = 'application/json'
+      @story = {project_id: 1234567, id: 890, name: 'foo'}
+      @putPath = '/services/v5/projects/1234567/stories/890'
 
     it 'should call the appropriate endpoint', ->
-      req = nock(@url, {reqheaders: @options.headers})
-        .put('/services/v5/projects/1234567/stories/890')
-        .reply(200)
-      TrackerUtils.startStory {project_id: 1234567, id: 890}
+      req = nock(@url, {reqheaders: @options.headers}).put(@putPath).reply(200)
+      TrackerUtils.startStory @story
       req.done()
+
+    it 'should show a success notification when the story is started', ->
+      done = false
+      spyOn(atom.notifications, 'addSuccess').andCallFake (msg) ->
+        expect(msg).toEqual('Started story "foo".')
+        done = true
+      nock(@url, {reqheaders: @options.headers}).put(@putPath).reply(200)
+      runs ->
+        TrackerUtils.startStory @story
+      waitsFor (-> done), 'calls to be complete', 100
+
+    it 'should show an error if the request times out', ->
+      done = false
+      spyOn(atom.notifications, 'addError').andCallFake (arg, opts) ->
+        expect(arg).toEqual 'Failed to connect to Pivotal Tracker.'
+        expect(opts).toEqual {icon: 'radio-tower'}
+        done = true
+      nock(@url, {reqheaders: @options.headers}).put(@putPath)
+        .socketDelay(2000).reply(500)
+      runs ->
+        TrackerUtils.startStory @story
+      waitsFor (-> done), 'calls to be complete', 100
+
+    it 'should show an error if authentication fails', ->
+      done = false
+      spyOn(atom.notifications, 'addError').andCallFake (arg, opts) ->
+        expect(arg).toEqual TrackerUtils.AUTH_FAIL_MSG
+        expect(opts).toEqual {icon: 'lock'}
+        done = true
+      nock(@url, {reqheaders: @options.headers}).put(@putPath).reply(403)
+      runs ->
+        TrackerUtils.startStory @story
+      waitsFor (-> done), 'calls to be complete', 100
+
+    it 'should show an error if anything else fails', ->
+      done = false
+      errMsg = 'Failed to start story "foo".'
+      error = spyOn(atom.notifications, 'addError').andCallFake (arg) ->
+        expect(arg).toEqual(errMsg)
+        done = true
+      req = nock(@url, {reqheaders: @options.headers}).put(@putPath).reply(500)
+      runs ->
+        TrackerUtils.startStory @story
+      waitsFor (-> done), 'calls to be complete', 100
