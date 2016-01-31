@@ -1,13 +1,13 @@
-NextStoryView = require '../../lib/views/next-story-view'
+SelectStoryListView = require '../../lib/views/select-story-list-view'
 TrackerUtils = require '../../lib/services/tracker-utils'
 
-describe 'NextStoryView', ->
+describe 'SelectStoryListView', ->
 
   describe 'handleStories method', ->
 
     beforeEach ->
       spyOn(TrackerUtils, 'getUnstartedStories')
-      @view = new NextStoryView
+      @view = new SelectStoryListView
 
     it 'should filter the stories', ->
       spyOn(@view, 'setItems')
@@ -35,7 +35,7 @@ describe 'NextStoryView', ->
     beforeEach ->
       atom.config.set 'atom-tracker.showFeatureEstimate', false
       spyOn(TrackerUtils, 'getUnstartedStories')
-      @view = new NextStoryView
+      @view = new SelectStoryListView
 
     it 'should set the appropriate default values', ->
       config = @view.configureItem {story_type: 'foo', name: 'bar'}
@@ -67,7 +67,7 @@ describe 'NextStoryView', ->
     beforeEach ->
       spyOn(TrackerUtils, 'getUnstartedStories')
       spyOn(TrackerUtils, 'startStory')
-      @view = new NextStoryView
+      @view = new SelectStoryListView
 
     it 'should call startStory with the selected item', ->
       item = {foo: 'bar'}
@@ -79,7 +79,7 @@ describe 'NextStoryView', ->
 
     beforeEach ->
       spyOn(TrackerUtils, 'getUnstartedStories')
-      @view = new NextStoryView
+      @view = new SelectStoryListView
 
     testCases = [
       {

@@ -1,10 +1,9 @@
 {SelectListView} = require 'atom-space-pen-views'
 
-
 FileUtils = require '../services/file-utils'
 TrackerUtils = require '../services/tracker-utils'
 
-module.exports = class NextStoryView extends SelectListView
+module.exports = class SelectStoryListView extends SelectListView
   callback: null
   panel: null
   project: null

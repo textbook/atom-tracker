@@ -1,8 +1,8 @@
 {CompositeDisposable} = require 'atom'
 
-CreateConfigView = require './views/create-config-view'
 FileUtils = require './services/file-utils'
-NextStoryView = require './views/next-story-view'
+SelectStoryListView = require './views/select-story-list-view'
+SelectProjectListView = require './views/select-project-list-view'
 StatusBarView = require './views/status-bar-view'
 
 module.exports = AtomTracker =
@@ -82,10 +82,10 @@ module.exports = AtomTracker =
       @statusBarTile.getItem().display false
 
   selectNextStory: ->
-    new NextStoryView(@projectData.project, @state.atomTrackerViewState).reveal()
+    new SelectStoryListView(@projectData.project, @state.atomTrackerViewState).reveal()
 
   createProjectConfig: ->
-    new CreateConfigView(@state.atomTrackerViewState).reveal =>
+    new SelectProjectListView(@state.atomTrackerViewState).reveal =>
       @readProjectConfig()
 
   readProjectConfig: ->

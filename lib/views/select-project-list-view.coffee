@@ -4,7 +4,7 @@
 FileUtils = require '../services/file-utils'
 TrackerUtils = require '../services/tracker-utils'
 
-module.exports = class CreateConfigView extends SelectListView
+module.exports = class SelectProjectListView extends SelectListView
   callback: null
   panel: null
 

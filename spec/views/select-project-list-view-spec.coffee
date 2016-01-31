@@ -1,8 +1,8 @@
-CreateConfigView = require '../../lib/views/create-config-view'
+SelectProjectListView = require '../../lib/views/select-project-list-view'
 FileUtils = require '../../lib/services/file-utils'
 TrackerUtils = require '../../lib/services/tracker-utils'
 
-describe 'CreateConfigView', ->
+describe 'SelectProjectListView', ->
   view = null
 
   beforeEach ->
@@ -11,13 +11,13 @@ describe 'CreateConfigView', ->
   describe 'initialize method', ->
 
     it 'calls getProject', ->
-      view = new CreateConfigView
+      view = new SelectProjectListView
       expect(TrackerUtils.getProjects).toHaveBeenCalled()
 
   describe 'confirmed method', ->
 
     beforeEach ->
-      @view = new CreateConfigView
+      @view = new SelectProjectListView
 
     it 'should get the full project details', ->
       spyOn(TrackerUtils, 'getProjectDetails')
