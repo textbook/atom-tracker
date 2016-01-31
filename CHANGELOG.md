@@ -2,6 +2,12 @@
 * Every feature added
 * Every bug fixed
 
+## 0.0.4 - Add Ability to Start story
+* Choose a story from a drop-down list
+* Only stories ready to start (bugs/chores/estimated features) are shown
+* Start the selected story
+* See a warning if no stories are ready to start
+
 ## 0.0.3 - Added Velocity to Status Bar
 * Shows current velocity badge
 * Configurable in Settings
