@@ -30,19 +30,20 @@ class StatusBarView extends HTMLElement
       @setAttribute 'hidden', true
 
   updateContent: (data) ->
-    color = null
-    if atom.config.get 'atom-tracker.colorizeStatusBar'
-      color = "##{data.membership_summary.project_color}"
-    if atom.config.get 'atom-tracker.velocityStatusBar'
-      @velocitySpan.removeAttribute 'hidden'
-    else
-      @velocitySpan.setAttribute 'hidden', true
-    @textLink.style.color = color
-    @iconSpan.style.color = color
-    @textLink.setAttribute 'href',
-      "https://www.pivotaltracker.com/n/projects/#{data.project.id}"
-    @textLink.textContent = "#{data.project.name}"
-    @velocitySpan.textContent = "#{data.project.current_velocity}"
+    if data and data.project and data.membership_summary
+      color = null
+      if atom.config.get 'atom-tracker.colorizeStatusBar'
+        color = "##{data.membership_summary.project_color}"
+      if atom.config.get 'atom-tracker.velocityStatusBar'
+        @velocitySpan.removeAttribute 'hidden'
+      else
+        @velocitySpan.setAttribute 'hidden', true
+      @textLink.style.color = color
+      @iconSpan.style.color = color
+      @textLink.setAttribute 'href',
+        "https://www.pivotaltracker.com/n/projects/#{data.project.id}"
+      @textLink.textContent = "#{data.project.name}"
+      @velocitySpan.textContent = "#{data.project.current_velocity}"
 
 module.exports = document.registerElement 'atom-tracker-status',
   prototype: StatusBarView.prototype

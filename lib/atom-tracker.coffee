@@ -1,7 +1,8 @@
 {CompositeDisposable} = require 'atom'
 
 FileUtils = require './services/file-utils'
-SelectStoryListView = require './views/select-story-list-view'
+SelectStoryStartListView = require './views/select-story-start-list-view'
+SelectStoryFinishListView = require './views/select-story-finish-list-view'
 SelectProjectListView = require './views/select-project-list-view'
 StatusBarView = require './views/status-bar-view'
 
@@ -59,6 +60,8 @@ module.exports = AtomTracker =
       'atom-tracker:create-config': => @createProjectConfig()
     @subscriptions.add atom.commands.add 'atom-workspace',
       'atom-tracker:next-story': => @selectNextStory()
+    @subscriptions.add atom.commands.add 'atom-workspace',
+      'atom-tracker:finish-story': => @finishCurrentStory()
     # Monitor configuration changes
     atom.config.onDidChange 'atom-tracker.showStatusBar', ({newValue, oldValue}) =>
       @srefreshStatusBar()
@@ -82,7 +85,16 @@ module.exports = AtomTracker =
       @statusBarTile.getItem().display false
 
   selectNextStory: ->
-    new SelectStoryListView(@projectData.project, @state.atomTrackerViewState).reveal()
+    new SelectStoryStartListView(
+      @projectData.project,
+      @state.atomTrackerViewState
+    ).reveal()
+
+  finishCurrentStory: ->
+    new SelectStoryFinishListView(
+      @projectData.project,
+      @state.atomTrackerViewState
+    ).reveal()
 
   createProjectConfig: ->
     new SelectProjectListView(@state.atomTrackerViewState).reveal =>

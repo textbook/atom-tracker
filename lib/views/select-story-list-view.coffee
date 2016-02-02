@@ -8,14 +8,15 @@ module.exports = class SelectStoryListView extends SelectListView
   panel: null
   project: null
 
-  MAX_LEN = 75
+  MAX_LEN: 75
 
-  initialize: (project) ->
+  initialize: ->
     super
-    @project = project
     @addClass('overlay from-top tracker-story-list')
     @setLoading 'Fetching story list...'
-    TrackerUtils.getUnstartedStories project, @handleStories, (=> @panel?.hide())
+
+  filterItems: (item) ->
+    return true
 
   handleStories: (stories) ->
     filtered = stories.filter @filterItems
@@ -23,16 +24,8 @@ module.exports = class SelectStoryListView extends SelectListView
       @setItems filtered
     else
       @panel?.hide()
-      errMsg = "No unstarted stories in the \"#{@project.name}\" backlog"
+      errMsg = "No matching stories in the \"#{@project.name}\" backlog"
       atom.notifications.addWarning errMsg
-
-  filterItems: (story) ->
-    # Remove stories the user can't actually start
-    if story.story_type is 'release'
-      return false
-    else if story.story_type is 'feature' and story.estimate is undefined
-      return false
-    return true
 
   reveal: (successCallback) ->
     @callback = successCallback
@@ -72,10 +65,6 @@ module.exports = class SelectStoryListView extends SelectListView
     config.pointSpan +
     "</li>"
 
-  getFilterKey: -> 'project_name'
-
-  confirmed: (item) ->
-    @panel?.hide()
-    TrackerUtils.startStory item
+  getFilterKey: -> 'name'
 
   cancelled: -> @panel.hide()

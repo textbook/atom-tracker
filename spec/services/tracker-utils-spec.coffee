@@ -56,7 +56,7 @@ describe 'TrackerUtils', ->
         expect(opts).toEqual {icon: 'radio-tower'}
         done = true
       nock(@url, {reqheaders: @options.headers}).get(@options.path)
-        .socketDelay(2000).reply(500)
+        .socketDelay(3000).reply(500)
       runs ->
         TrackerUtils.makeGetRequest @options, null, null, null
       waitsFor (-> done), 'calls to be complete'
@@ -120,6 +120,50 @@ describe 'TrackerUtils', ->
       TrackerUtils.getUnstartedStories {id: 1234567, name: 'foo'}
       req.done()
 
+  describe 'makePutRequest method', ->
+
+    beforeEach ->
+      @options.path = '/services/v5/projects/1234567/stories/890'
+
+    it 'should call the appropriate endpoint', ->
+      req = nock(@url, {reqheaders: @options.headers}).put(@options.path).reply(200)
+      TrackerUtils.makePutRequest @options, {}
+      req.done()
+
+    it 'should show an error if the request times out', ->
+      done = false
+      spyOn(atom.notifications, 'addError').andCallFake (arg, opts) ->
+        expect(arg).toEqual 'Failed to connect to Pivotal Tracker.'
+        expect(opts).toEqual {icon: 'radio-tower'}
+        done = true
+      nock(@url, {reqheaders: @options.headers}).put(@options.path)
+        .socketDelay(3000).reply(500)
+      runs ->
+        TrackerUtils.makePutRequest @options, {}
+      waitsFor (-> done), 'calls to be complete', 100
+
+    it 'should show an error if authentication fails', ->
+      done = false
+      spyOn(atom.notifications, 'addError').andCallFake (arg, opts) ->
+        expect(arg).toEqual TrackerUtils.AUTH_FAIL_MSG
+        expect(opts).toEqual {icon: 'lock'}
+        done = true
+      nock(@url, {reqheaders: @options.headers}).put(@options.path).reply(403)
+      runs ->
+        TrackerUtils.makePutRequest @options, {}
+      waitsFor (-> done), 'calls to be complete', 100
+
+    it 'should show an error if anything else fails', ->
+      done = false
+      errMsg = 'Failed to start story "foo".'
+      error = spyOn(atom.notifications, 'addError').andCallFake (arg) ->
+        expect(arg).toEqual(errMsg)
+        done = true
+      req = nock(@url, {reqheaders: @options.headers}).put(@options.path).reply(500)
+      runs ->
+        TrackerUtils.makePutRequest @options, {}, errMsg
+      waitsFor (-> done), 'calls to be complete', 100
+
   describe 'startStory method', ->
     putPath = null
     story = null
@@ -128,6 +172,11 @@ describe 'TrackerUtils', ->
       @options.headers['Content-Type'] = 'application/json'
       @story = {project_id: 1234567, id: 890, name: 'foo'}
       @putPath = '/services/v5/projects/1234567/stories/890'
+
+    it 'should call the appropriate method', ->
+      spyOn(TrackerUtils, 'makePutRequest')
+      TrackerUtils.startStory @story
+      expect(TrackerUtils.makePutRequest).toHaveBeenCalled()
 
     it 'should call the appropriate endpoint', ->
       req = nock(@url, {reqheaders: @options.headers}).put(@putPath).reply(200)
@@ -144,36 +193,31 @@ describe 'TrackerUtils', ->
         TrackerUtils.startStory @story
       waitsFor (-> done), 'calls to be complete', 100
 
-    it 'should show an error if the request times out', ->
-      done = false
-      spyOn(atom.notifications, 'addError').andCallFake (arg, opts) ->
-        expect(arg).toEqual 'Failed to connect to Pivotal Tracker.'
-        expect(opts).toEqual {icon: 'radio-tower'}
-        done = true
-      nock(@url, {reqheaders: @options.headers}).put(@putPath)
-        .socketDelay(2000).reply(500)
-      runs ->
-        TrackerUtils.startStory @story
-      waitsFor (-> done), 'calls to be complete', 100
+  describe 'finishStory method', ->
+    putPath = null
+    story = null
 
-    it 'should show an error if authentication fails', ->
-      done = false
-      spyOn(atom.notifications, 'addError').andCallFake (arg, opts) ->
-        expect(arg).toEqual TrackerUtils.AUTH_FAIL_MSG
-        expect(opts).toEqual {icon: 'lock'}
-        done = true
-      nock(@url, {reqheaders: @options.headers}).put(@putPath).reply(403)
-      runs ->
-        TrackerUtils.startStory @story
-      waitsFor (-> done), 'calls to be complete', 100
+    beforeEach ->
+      @options.headers['Content-Type'] = 'application/json'
+      @story = {project_id: 1234567, id: 890, name: 'foo'}
+      @putPath = '/services/v5/projects/1234567/stories/890'
 
-    it 'should show an error if anything else fails', ->
+    it 'should call the appropriate method', ->
+      spyOn(TrackerUtils, 'makePutRequest')
+      TrackerUtils.finishStory @story
+      expect(TrackerUtils.makePutRequest).toHaveBeenCalled()
+
+    it 'should call the appropriate endpoint', ->
+      req = nock(@url, {reqheaders: @options.headers}).put(@putPath).reply(200)
+      TrackerUtils.startStory @story
+      req.done()
+
+    it 'should show a success notification when the story is finished', ->
       done = false
-      errMsg = 'Failed to start story "foo".'
-      error = spyOn(atom.notifications, 'addError').andCallFake (arg) ->
-        expect(arg).toEqual(errMsg)
+      spyOn(atom.notifications, 'addSuccess').andCallFake (msg) ->
+        expect(msg).toEqual('Finished story "foo".')
         done = true
-      req = nock(@url, {reqheaders: @options.headers}).put(@putPath).reply(500)
+      nock(@url, {reqheaders: @options.headers}).put(@putPath).reply(200)
       runs ->
-        TrackerUtils.startStory @story
+        TrackerUtils.finishStory @story
       waitsFor (-> done), 'calls to be complete', 100

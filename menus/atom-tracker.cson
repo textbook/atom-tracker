@@ -14,12 +14,16 @@
       'submenu': [
         {
           'label': 'Link Project'
-          'atom-tracker:create-config'
+          'command': 'atom-tracker:create-config'
         }
         {'type': 'separator'}
         {
           'label': 'Select Next Story'
-          'atom-tracker:next-story'
+          'command': 'atom-tracker:next-story'
+        }
+        {
+          'label': 'Finish Current Story'
+          'command': 'atom-tracker:finish-story'
         }
       ]
     ]

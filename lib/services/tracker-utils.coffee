@@ -39,27 +39,41 @@ module.exports =
 
   startStory: (story) ->
     options = @defaultOptions()
+    options.path = "/services/v5/projects/#{story.project_id}/stories/#{story.id}"
+    @makePutRequest options, {current_state: 'started'},
+      "Failed to start story \"#{story.name}\".",
+      (-> atom.notifications.addSuccess "Started story \"#{story.name}\".")
+
+  finishStory: (story) ->
+    options = @defaultOptions()
+    options.path = "/services/v5/projects/#{story.project_id}/stories/#{story.id}"
+    @makePutRequest options, {current_state: 'finished'},
+      "Failed to finish story \"#{story.name}\".",
+      (-> atom.notifications.addSuccess "Finished story \"#{story.name}\".")
+
+  makePutRequest: (options, data, errMessage, success, failure) ->
     options.headers['Content-Type'] = 'application/json'
     options.method = 'PUT'
-    options.path = "/services/v5/projects/#{story.project_id}/stories/#{story.id}"
     req = https.request options, (res) =>
       if res.statusCode is 200
-        atom.notifications.addSuccess "Started story \"#{story.name}\"."
-      else if res.statusCode is 403
-        atom.notifications.addError @AUTH_FAIL_MSG, {icon: 'lock'}
+        success?(res)
       else
-        atom.notifications.addError "Failed to start story \"#{story.name}\"."
+        if res.statusCode is 403
+          atom.notifications.addError @AUTH_FAIL_MSG, {icon: 'lock'}
+        else
+          atom.notifications.addError errMessage
+        failure?(res)
     req.on('error', (err) ->
       atom.notifications.addError "Failed to connect to Pivotal Tracker.",
         {icon: 'radio-tower'}
       failure?(err)
     )
-    req.setTimeout(1000, ->
+    req.setTimeout(2500, ->
       atom.notifications.addError "Failed to connect to Pivotal Tracker.",
         {icon: 'radio-tower'}
       req.abort()
     )
-    req.write(JSON.stringify {current_state: 'started'})
+    req.write JSON.stringify data
     req.end()
 
   makeGetRequest: (options, errMessage, success, failure) ->
@@ -81,7 +95,7 @@ module.exports =
         {icon: 'radio-tower'}
       failure?(err)
     )
-    req.setTimeout(1000, ->
+    req.setTimeout(2500, ->
       atom.notifications.addError "Failed to connect to Pivotal Tracker.",
         {icon: 'radio-tower'}
       req.abort()

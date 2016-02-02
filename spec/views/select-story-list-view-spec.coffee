@@ -1,13 +1,12 @@
 SelectStoryListView = require '../../lib/views/select-story-list-view'
-TrackerUtils = require '../../lib/services/tracker-utils'
 
 describe 'SelectStoryListView', ->
 
   describe 'handleStories method', ->
 
     beforeEach ->
-      spyOn(TrackerUtils, 'getUnstartedStories')
       @view = new SelectStoryListView
+      @view.filterItems = (item) -> true
 
     it 'should filter the stories', ->
       spyOn(@view, 'setItems')
@@ -26,15 +25,15 @@ describe 'SelectStoryListView', ->
     it 'should show a warning if there are no filtered stories', ->
       spyOn(atom.notifications, 'addWarning')
       @view.project = {name: 'foo'}
-      expected = 'No unstarted stories in the "foo" backlog'
+      expected = 'No matching stories in the "foo" backlog'
       @view.handleStories []
       expect(atom.notifications.addWarning).toHaveBeenCalledWith(expected)
+
 
   describe 'configureItem method', ->
 
     beforeEach ->
       atom.config.set 'atom-tracker.showFeatureEstimate', false
-      spyOn(TrackerUtils, 'getUnstartedStories')
       @view = new SelectStoryListView
 
     it 'should set the appropriate default values', ->
@@ -60,55 +59,3 @@ describe 'SelectStoryListView', ->
       @view.MAX_LEN = 10
       config = @view.configureItem {story_type: 'feature', name: 'foo bar baz'}
       expect(config.name).toEqual('foo bar...')
-
-  describe 'confirmed method', ->
-    view = null
-
-    beforeEach ->
-      spyOn(TrackerUtils, 'getUnstartedStories')
-      spyOn(TrackerUtils, 'startStory')
-      @view = new SelectStoryListView
-
-    it 'should call startStory with the selected item', ->
-      item = {foo: 'bar'}
-      @view.confirmed item
-      expect(TrackerUtils.startStory).toHaveBeenCalledWith(item)
-
-  describe 'filterItems method', ->
-    view = null
-
-    beforeEach ->
-      spyOn(TrackerUtils, 'getUnstartedStories')
-      @view = new SelectStoryListView
-
-    testCases = [
-      {
-        name: 'should return true for estimated features'
-        story: {story_type: 'feature', estimate: 0}
-        expected: true
-      },
-      {
-        name: 'should return true for bugs'
-        story: {story_type: 'bug'}
-        expected: true
-      },
-      {
-        name: 'should return true for estimated features'
-        story: {story_type: 'chore'}
-        expected: true
-      },
-      {
-        name: 'should return false for releases'
-        story: {story_type: 'release'}
-        expected: false
-      },
-      {
-        name: 'should return false for unestimated features'
-        story: {story_type: 'feature'}
-        expected: false
-      }
-    ]
-
-    for testCase in testCases
-      it testCase.name, ->
-        expect(@view.filterItems testCase.story).toBe(testCase.expected)

@@ -9,4 +9,5 @@
 # https://atom.io/docs/latest/behind-atom-keymaps-in-depth
 'atom-workspace':
   'ctrl-alt-l': 'atom-tracker:create-config'
-  'ctrl-alt-n': 'atom-tracker:next-story'
+  'ctrl-alt-j': 'atom-tracker:next-story'
+  'ctrl-alt-k': 'atom-tracker:finish-story'
