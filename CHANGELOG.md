@@ -2,6 +2,12 @@
 * Every feature added
 * Every bug fixed
 
+## 0.0.5 - Add Ability to Finish Story
+* Choose a story from a drop-down list
+* Only stories ready to finish (started stories) are shown
+* Finish the selected story
+* See a warning if no stories are ready to finish
+
 ## 0.0.4 - Add Ability to Start story
 * Choose a story from a drop-down list
 * Only stories ready to start (bugs/chores/estimated features) are shown
