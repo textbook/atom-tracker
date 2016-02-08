@@ -1,56 +1,21 @@
 {CompositeDisposable} = require 'atom'
 
 FileUtils = require './services/file-utils'
+SelectProjectListView = require './views/select-project-list-view'
 SelectStoryStartListView = require './views/select-story-start-list-view'
 SelectStoryFinishListView = require './views/select-story-finish-list-view'
-SelectProjectListView = require './views/select-project-list-view'
 StatusBarView = require './views/status-bar-view'
 
+NO_PROJECT = 'Atom Tracker requires an active Atom project'
+
 module.exports = AtomTracker =
+
+  config: require './atom-tracker-config'
+
   projectData: null
   state: null
   statusBarTile: null
   subscriptions: null
-
-  config:
-    trackerToken:
-      default: ''
-      description: 'Your access token for the Tracker API. Find it online at ' +
-        'https://www.pivotaltracker.com/profile#api.'
-      order: 1
-      title: 'Tracker API Token'
-      type: 'string'
-    showStatusBar:
-      default: true
-      description: 'Show Atom Tracker status in the status bar.'
-      order: 2
-      title: 'Show Status Bar'
-      type: 'boolean'
-    colorizeStatusBar:
-      default: false
-      description: 'Use the project color in the status bar.'
-      order: 3
-      title: 'Colorize Status Bar'
-      type: 'boolean'
-    velocityStatusBar:
-      default: false
-      description: 'Show the project\'s current velocity in the status bar.'
-      order: 4
-      title: 'Show Velocity in Status Bar'
-      type: 'boolean'
-    showFeatureEstimate:
-      default: true
-      description: 'Show features\' estimated points when selecting a story.'
-      order: 5
-      title: 'Show Estimates in Story Selector'
-      type: 'boolean'
-    projectConfigFile:
-      default: '.tracker.cson'
-      description: 'This file will store the project-specific configuration, ' +
-        'e.g. project Tracker ID, in your root project directory.'
-      order: 6
-      title: 'Project Configuration File Name'
-      type: 'string'
 
   activate: (state) ->
     @state = state
@@ -63,12 +28,15 @@ module.exports = AtomTracker =
     @subscriptions.add atom.commands.add 'atom-workspace',
       'atom-tracker:finish-story': => @finishCurrentStory()
     # Monitor configuration changes
-    atom.config.onDidChange 'atom-tracker.showStatusBar', ({newValue, oldValue}) =>
-      @srefreshStatusBar()
-    atom.config.onDidChange 'atom-tracker.colorizeStatusBar', ({newValue, oldValue}) =>
-      @refreshStatusBar()
-    atom.config.onDidChange 'atom-tracker.velocityStatusBar', ({newValue, oldValue}) =>
-      @refreshStatusBar()
+    atom.config.onDidChange 'atom-tracker.showStatusBar',
+      ({newValue, oldValue}) =>
+        @srefreshStatusBar()
+    atom.config.onDidChange 'atom-tracker.colorizeStatusBar',
+      ({newValue, oldValue}) =>
+        @refreshStatusBar()
+    atom.config.onDidChange 'atom-tracker.velocityStatusBar',
+      ({newValue, oldValue}) =>
+        @refreshStatusBar()
     # Initialise with current project data
     @readProjectConfig()
 
@@ -85,20 +53,29 @@ module.exports = AtomTracker =
       @statusBarTile.getItem().display false
 
   selectNextStory: ->
-    new SelectStoryStartListView(
-      @projectData.project,
-      @state.atomTrackerViewState
-    ).reveal()
+    if atom.project.getPaths().length > 0
+      new SelectStoryStartListView(
+        @projectData.project,
+        @state.atomTrackerViewState
+      ).reveal()
+    else
+      atom.notifications.addWarning NO_PROJECT, {icon: 'graph'}
 
   finishCurrentStory: ->
-    new SelectStoryFinishListView(
-      @projectData.project,
-      @state.atomTrackerViewState
-    ).reveal()
+    if atom.project.getPaths().length > 0
+      new SelectStoryFinishListView(
+        @projectData.project,
+        @state.atomTrackerViewState
+      ).reveal()
+    else
+      atom.notifications.addWarning NO_PROJECT, {icon: 'graph'}
 
   createProjectConfig: ->
-    new SelectProjectListView(@state.atomTrackerViewState).reveal =>
-      @readProjectConfig()
+    if atom.project.getPaths().length > 0
+      new SelectProjectListView(@state.atomTrackerViewState).reveal =>
+        @readProjectConfig()
+    else
+      atom.notifications.addWarning NO_PROJECT, {icon: 'graph'}
 
   readProjectConfig: ->
     paths = atom.project.getPaths()

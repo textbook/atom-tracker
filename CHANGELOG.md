@@ -2,6 +2,10 @@
 * Every feature added
 * Every bug fixed
 
+## 0.0.6 - Refactoring
+* Split config out to a separate file
+* Include warning when there isn't an active project in Atom
+
 ## 0.0.5 - Add Ability to Finish Story
 * Choose a story from a drop-down list
 * Only stories ready to finish (started stories) are shown
