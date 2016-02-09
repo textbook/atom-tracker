@@ -7,6 +7,7 @@ SelectStoryFinishListView = require './views/select-story-finish-list-view'
 StatusBarView = require './views/status-bar-view'
 
 NO_PROJECT = 'Atom Tracker requires an active Atom project'
+NO_TRACKER = 'Atom Tracker is not configured for this project'
 
 module.exports = AtomTracker =
 
@@ -27,6 +28,9 @@ module.exports = AtomTracker =
       'atom-tracker:next-story': => @selectNextStory()
     @subscriptions.add atom.commands.add 'atom-workspace',
       'atom-tracker:finish-story': => @finishCurrentStory()
+      'atom-tracker:next-story': => @selectNextStory()
+    @subscriptions.add atom.commands.add 'atom-workspace',
+      'atom-tracker:create-story': => @createNewStory()
     # Monitor configuration changes
     atom.config.onDidChange 'atom-tracker.showStatusBar',
       ({newValue, oldValue}) =>
@@ -54,19 +58,31 @@ module.exports = AtomTracker =
 
   selectNextStory: ->
     if atom.project.getPaths().length > 0
-      new SelectStoryStartListView(
-        @projectData.project,
-        @state.atomTrackerViewState
-      ).reveal()
+      if @projectData
+        new SelectStoryStartListView(
+          @projectData.project,
+          @state.atomTrackerViewState
+        ).reveal()
+      else
+        atom.notifications.addWarning NO_TRACKER, {icon: 'graph'}
+    else
+      atom.notifications.addWarning NO_PROJECT, {icon: 'graph'}
+
+  createNewStory: ->
+    if atom.project.getPaths().length > 0
+      new CreateStoryView(@state.atomTrackerViewState)
     else
       atom.notifications.addWarning NO_PROJECT, {icon: 'graph'}
 
   finishCurrentStory: ->
     if atom.project.getPaths().length > 0
-      new SelectStoryFinishListView(
-        @projectData.project,
-        @state.atomTrackerViewState
-      ).reveal()
+      if @projectData
+        new SelectStoryFinishListView(
+          @projectData.project,
+          @state.atomTrackerViewState
+        ).reveal()
+      else
+        atom.notifications.addWarning NO_TRACKER, {icon: 'graph'}
     else
       atom.notifications.addWarning NO_PROJECT, {icon: 'graph'}
 
@@ -78,13 +94,14 @@ module.exports = AtomTracker =
       atom.notifications.addWarning NO_PROJECT, {icon: 'graph'}
 
   readProjectConfig: ->
-    paths = atom.project.getPaths()
-    if paths.length > 0
+    if atom.project.getPaths().length > 0
       FileUtils.readCsonFile FileUtils.rootFilepath(), (results) =>
         @projectData = results
         tile = @statusBarTile?.getItem()
         tile.updateContent results
         tile.display atom.config.get 'atom-tracker.showStatusBar'
+    else
+      atom.notifications.addWarning NO_PROJECT, {icon: 'graph'}
 
   deactivate: ->
     @subscriptions.dispose()
