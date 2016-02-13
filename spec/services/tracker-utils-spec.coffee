@@ -239,6 +239,36 @@ describe 'TrackerUtils', ->
         TrackerUtils.startStory @story
       waitsFor (-> done), 'calls to be complete', 100
 
+  describe 'createStory method', ->
+    postPath = null
+    projectId = null
+    story = null
+
+    beforeEach ->
+      @options.headers['Content-Type'] = 'application/json'
+      @postPath = '/services/v5/projects/1234567/stories'
+      @projectId = 1234567
+      @story = {name: 'foo', story_type: 'bar'}
+
+    it 'should call the appropriate method', ->
+      spyOn(TrackerUtils, 'makePostRequest')
+      TrackerUtils.createStory @projectId, @story
+      expect(TrackerUtils.makePostRequest).toHaveBeenCalled()
+
+    it 'should call the appropriate endpoint', ->
+      req = nock(@url, {reqheaders: @options.headers}).post(@postPath).reply(200)
+      TrackerUtils.createStory @projectId, @story
+      req.done()
+
+    it 'should show a failure notification when the story isn\'t created', ->
+      done = false
+      spyOn(atom.notifications, 'addError').andCallFake (msg) ->
+        expect(msg).toEqual('Failed to create story "foo"')
+        done = true
+      req = nock(@url, {reqheaders: @options.headers}).post(@postPath).reply(400)
+      TrackerUtils.createStory @projectId, @story
+      waitsFor (-> done), 'calls to be complete', 100
+
   describe 'finishStory method', ->
     putPath = null
     story = null

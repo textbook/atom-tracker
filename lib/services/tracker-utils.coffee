@@ -59,6 +59,7 @@ module.exports =
       "Failed to finish story \"#{story.name}\".",
       (-> atom.notifications.addSuccess "Finished story \"#{story.name}\"")
 
+  # TODO: Remove duplication from makeXXXRequest methods [#113687029]
   makePostRequest: (options, data, errMessage, success, failure) ->
     postData = JSON.stringify data
     options.headers['Content-Type'] = 'application/json'

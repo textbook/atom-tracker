@@ -63,7 +63,7 @@ module.exports = AtomTracker =
     match = line.match /TODO:?\s*(.+)/
     if match
       name = match[1].trim()
-      if name.match /\[#\d{9}\]/
+      if name.match /\[#\d+\]/
         atom.notifications.addError 'Story already created', {icon: 'gear'}
       else
         editor.moveToEndOfLine()
@@ -73,7 +73,7 @@ module.exports = AtomTracker =
           atom.notifications.addSuccess msg, {icon: 'gear'}
           editor.insertText " [##{data.id}]"
     else
-      atom.notifications.addWarning "No TODO in '#{line}'"
+      atom.notifications.addWarning "No TODO in \"#{line}\""
 
   consumeStatusBar: (statusBar) ->
     @statusBarTile = statusBar.addRightTile item: new StatusBarView, priority: 5

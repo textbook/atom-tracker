@@ -1,4 +1,5 @@
 AtomTracker = require '../lib/atom-tracker'
+TrackerUtils = require '../lib//services/tracker-utils'
 
 # Use the command `window:run-package-specs` (cmd-alt-ctrl-p) to run specs.
 #
@@ -35,6 +36,13 @@ describe "AtomTracker", ->
       spyOn(AtomTracker, 'selectNextStory')
       atom.commands.dispatch workspaceElement, 'atom-tracker:next-story'
       expect(AtomTracker.selectNextStory).toHaveBeenCalled()
+
+  describe 'when the atom-tracker:create-todo-story event is triggered', ->
+
+    it 'should call createTodoStory', ->
+      spyOn(AtomTracker, 'createTodoStory')
+      atom.commands.dispatch workspaceElement, 'atom-tracker:create-todo-story'
+      expect(AtomTracker.createTodoStory).toHaveBeenCalled()
 
   testCases = [
     'atom-tracker.colorizeStatusBar'
@@ -79,6 +87,67 @@ describe "AtomTracker", ->
       AtomTracker.projectData = {}
       AtomTracker.refreshStatusBar()
       expect(@item.updateContent).not.toHaveBeenCalledWith(@data)
+
+  describe 'processTodoLine method', ->
+    editor = null
+    line = null
+
+    beforeEach ->
+      AtomTracker.projectData = {project: {id: 1234567}}
+      @editor = jasmine.createSpyObj 'editor', ['moveToEndOfLine', 'insertText']
+      @line = 'TODO: take over the world'
+      spyOn(atom.notifications, 'addSuccess')
+      spyOn(TrackerUtils, 'createStory').andCallFake (projectId, story, func) ->
+        expect(projectId).toEqual(1234567)
+        expect(story).toEqual({name: 'take over the world', story_type: 'chore'})
+        func({name: 'take over the world', id: 123456789})
+
+    it 'should only trigger on lines containing "TODO"', ->
+      spyOn(atom.notifications, 'addWarning')
+      AtomTracker.processTodoLine 'foo'
+      expect(atom.notifications.addWarning).toHaveBeenCalledWith 'No TODO in "foo"'
+
+    it 'should not allow creation of stories if comment already has ID', ->
+      spyOn(atom.notifications, 'addError')
+      AtomTracker.processTodoLine 'TODO [#123456789]'
+      expect(atom.notifications.addError).toHaveBeenCalledWith(
+        'Story already created', {icon: 'gear'}
+      )
+
+    it 'should call createStory and notify the user', ->
+      AtomTracker.processTodoLine @line, @editor
+      expect(TrackerUtils.createStory).toHaveBeenCalled()
+      expect(atom.notifications.addSuccess).toHaveBeenCalledWith(
+        'Created story "take over the world" [#123456789]', {icon: 'gear'}
+      )
+
+    it 'should update the active editor', ->
+      AtomTracker.processTodoLine @line, @editor
+      expect(@editor.moveToEndOfLine).toHaveBeenCalled()
+      expect(@editor.insertText).toHaveBeenCalledWith ' [#123456789]'
+
+  describe 'createTodoStory method', ->
+
+    it 'should show an error if no editor is active', ->
+      spyOn(atom.notifications, 'addError')
+      spyOn(atom.workspace, 'getActiveTextEditor').andReturn(null)
+      AtomTracker.createTodoStory()
+      expect(atom.notifications.addError).toHaveBeenCalledWith(
+        'Active editor required to create story from comment'
+      )
+
+    it 'should process the active line', ->
+      mockEditor =
+        getBuffer:
+          jasmine.createSpy('getBuffer').andReturn {
+            getLines: jasmine.createSpy('getLines').andReturn ['foo', 'bar']
+          }
+        getCursorBufferPosition:
+          jasmine.createSpy('getCursorBufferPosition').andReturn {row: 1}
+      spyOn(atom.workspace, 'getActiveTextEditor').andReturn mockEditor
+      spyOn(AtomTracker, 'processTodoLine')
+      AtomTracker.createTodoStory()
+      expect(AtomTracker.processTodoLine).toHaveBeenCalledWith 'bar', mockEditor
 
   # describe "when the atom-tracker:toggle event is triggered", ->
   #   it "hides and shows the modal panel", ->
