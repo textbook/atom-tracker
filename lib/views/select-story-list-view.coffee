@@ -12,7 +12,7 @@ module.exports = class SelectStoryListView extends SelectListView
 
   initialize: ->
     super
-    @addClass('overlay from-top tracker-story-list')
+    @addClass 'overlay from-top tracker-story-list atom-tracker'
     @setLoading 'Fetching story list...'
 
   filterItems: (item) ->
@@ -48,7 +48,7 @@ module.exports = class SelectStoryListView extends SelectListView
     if item.story_type is 'feature' and atom.config.get 'atom-tracker.showFeatureEstimate'
       config.pointSpan = "  <span class=\"badge badge-small badge-info\">" +
         "#{item.estimate}</span>"
-    # Trunate long story names
+    # Truncate long story names
     if config.name.length > @MAX_LEN
       name = config.name.slice(0, @MAX_LEN - 3)
       if config.name.slice(@MAX_LEN - 3, @MAX_LEN - 2) isnt ' '

@@ -3,7 +3,12 @@
   'atom-text-editor': [
     {
       'label': 'Atom Tracker'
-      'submenu': []
+      'submenu': [
+        {
+          'label': 'Create New Story from Comment'
+          'command': 'atom-tracker:create-todo-story'
+        }
+      ]
     }
   ]
 'menu': [

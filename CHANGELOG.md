@@ -1,6 +1,5 @@
-## 0.1.0 - First Release
-* Every feature added
-* Every bug fixed
+## 0.0.7 - Create TODO stories
+* Create a new story in the icebox from a TODO comment
 
 ## 0.0.6 - Refactoring
 * Split config out to a separate file
