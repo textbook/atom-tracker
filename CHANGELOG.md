@@ -1,3 +1,6 @@
+## 0.0.8 - Respect grammars
+* When creating a TODO story, use the current grammar for comment/TODO
+
 ## 0.0.7 - Create TODO stories
 * Create a new story in the icebox from a TODO comment
 

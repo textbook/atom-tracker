@@ -90,43 +90,80 @@ describe "AtomTracker", ->
 
   describe 'processTodoLine method', ->
     editor = null
+    grammar = null
     line = null
 
     beforeEach ->
       AtomTracker.projectData = {project: {id: 1234567}}
       @editor = jasmine.createSpyObj 'editor', ['moveToEndOfLine', 'insertText']
+      @grammar =
+        tokenizeLine: jasmine.createSpy('tokenizeLine').andReturn {tokens: []}
       @line = 'TODO: take over the world'
-      spyOn(atom.notifications, 'addSuccess')
+      spyOn atom.notifications, 'addSuccess'
       spyOn(TrackerUtils, 'createStory').andCallFake (projectId, story, func) ->
         expect(projectId).toEqual(1234567)
         expect(story).toEqual({name: 'take over the world', story_type: 'chore'})
         func({name: 'take over the world', id: 123456789})
 
+    it 'should tokenize the line', ->
+      spyOn AtomTracker, 'getTodoComment'
+      AtomTracker.processTodoLine '  foo  ', null, @grammar
+      expect(@grammar.tokenizeLine).toHaveBeenCalledWith 'foo'
+
+    it 'should get the comment from the tokens', ->
+      spyOn AtomTracker, 'getTodoComment'
+      AtomTracker.processTodoLine 'foo', null, @grammar
+      expect(AtomTracker.getTodoComment).toHaveBeenCalledWith []
+
     it 'should only trigger on lines containing "TODO"', ->
+      spyOn AtomTracker, 'getTodoComment'
       spyOn(atom.notifications, 'addWarning')
-      AtomTracker.processTodoLine 'foo'
-      expect(atom.notifications.addWarning).toHaveBeenCalledWith 'No TODO in "foo"'
+      AtomTracker.processTodoLine 'foo', null, @grammar
+      expect(atom.notifications.addWarning).toHaveBeenCalledWith(
+        'Not a TODO comment line'
+      )
 
     it 'should not allow creation of stories if comment already has ID', ->
+      spyOn(AtomTracker, 'getTodoComment').andReturn 'foo [#123456789]'
       spyOn(atom.notifications, 'addError')
-      AtomTracker.processTodoLine 'TODO [#123456789]'
+      AtomTracker.processTodoLine '', null, @grammar
       expect(atom.notifications.addError).toHaveBeenCalledWith(
         'Story already created', {icon: 'gear'}
       )
 
     it 'should call createStory and notify the user', ->
-      AtomTracker.processTodoLine @line, @editor
+      spyOn(AtomTracker, 'getTodoComment').andReturn 'take over the world'
+      AtomTracker.processTodoLine @line, @editor, @grammar
       expect(TrackerUtils.createStory).toHaveBeenCalled()
       expect(atom.notifications.addSuccess).toHaveBeenCalledWith(
         'Created story "take over the world" [#123456789]', {icon: 'gear'}
       )
 
     it 'should update the active editor', ->
-      AtomTracker.processTodoLine @line, @editor
+      spyOn(AtomTracker, 'getTodoComment').andReturn 'take over the world'
+      AtomTracker.processTodoLine @line, @editor, @grammar
       expect(@editor.moveToEndOfLine).toHaveBeenCalled()
       expect(@editor.insertText).toHaveBeenCalledWith ' [#123456789]'
 
   describe 'createTodoStory method', ->
+    mockEditor = null
+
+    beforeEach ->
+      @mockEditor =
+        getBuffer:
+          jasmine.createSpy('getBuffer').andReturn {
+            getLines: jasmine.createSpy('getLines').andReturn ['foo', 'bar']
+            file: {path: 'some/dir/demo.ext'}
+          }
+        getCursorBufferPosition:
+          jasmine.createSpy('getCursorBufferPosition').andReturn {row: 1}
+      spyOn(atom.grammars, 'grammarForScopeName').andReturn {}
+      spyOn(AtomTracker, 'processTodoLine')
+
+    it 'should get the appropriate grammar', ->
+      spyOn(atom.workspace, 'getActiveTextEditor').andReturn @mockEditor
+      AtomTracker.createTodoStory()
+      expect(atom.grammars.grammarForScopeName).toHaveBeenCalledWith 'source.ext'
 
     it 'should show an error if no editor is active', ->
       spyOn(atom.notifications, 'addError')
@@ -137,17 +174,30 @@ describe "AtomTracker", ->
       )
 
     it 'should process the active line', ->
-      mockEditor =
-        getBuffer:
-          jasmine.createSpy('getBuffer').andReturn {
-            getLines: jasmine.createSpy('getLines').andReturn ['foo', 'bar']
-          }
-        getCursorBufferPosition:
-          jasmine.createSpy('getCursorBufferPosition').andReturn {row: 1}
-      spyOn(atom.workspace, 'getActiveTextEditor').andReturn mockEditor
-      spyOn(AtomTracker, 'processTodoLine')
+      spyOn(atom.workspace, 'getActiveTextEditor').andReturn @mockEditor
       AtomTracker.createTodoStory()
-      expect(AtomTracker.processTodoLine).toHaveBeenCalledWith 'bar', mockEditor
+      expect(AtomTracker.processTodoLine).toHaveBeenCalledWith 'bar',
+        @mockEditor, {}
+
+  describe 'getTodoComment method', ->
+    commentScope = null
+    todoScope = null
+
+    beforeEach ->
+      @commentScope = [null, null, 'punctuation.definition.comment.language']
+      @todoScope = [null, null, 'storage.type.class.todo']
+
+    it 'should return the first token after both comment and TODO', ->
+      tokens = [{scopes: @todoScope}, {scopes: @commentScope}, {value: 'foo'}]
+      expect(AtomTracker.getTodoComment tokens).toEqual 'foo'
+
+    it 'should return null if no TODO', ->
+      tokens = [{scopes: @commentScope}]
+      expect(AtomTracker.getTodoComment tokens).toBe null
+
+    it 'should return null if no comment', ->
+      tokens = [{scopes: @todoScope}]
+      expect(AtomTracker.getTodoComment tokens).toBe null
 
   # describe "when the atom-tracker:toggle event is triggered", ->
   #   it "hides and shows the modal panel", ->

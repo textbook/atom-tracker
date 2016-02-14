@@ -1,5 +1,7 @@
 {CompositeDisposable} = require 'atom'
 
+path = require 'path'
+
 FileUtils = require './services/file-utils'
 TrackerUtils = require './services/tracker-utils'
 
@@ -53,27 +55,46 @@ module.exports = AtomTracker =
   createTodoStory: ->
     editor = atom.workspace.getActiveTextEditor()
     if editor
-      line = editor.getBuffer().getLines()[editor.getCursorBufferPosition().row]
-      @processTodoLine line, editor
+      buffer = editor.getBuffer()
+      ext = path.extname(buffer.file.path)
+      line = buffer.getLines()[editor.getCursorBufferPosition().row]
+      grammar = atom.grammars.grammarForScopeName "source#{ext}"
+      if grammar
+        @processTodoLine line, editor, grammar
+      else
+        msg = 'Grammar definition required to create story from comment'
+        atom.notifications.addError msg
     else
       msg = 'Active editor required to create story from comment'
       atom.notifications.addError msg
 
-  processTodoLine: (line, editor) ->
-    match = line.match /TODO:?\s*(.+)/
-    if match
-      name = match[1].trim()
-      if name.match /\[#\d+\]/
+  getTodoComment: (tokens) ->
+    comment = false
+    todo = false
+    for token in tokens
+      if comment and todo
+        return token.value.trim()
+      else if token.scopes.length > 2 and token.scopes[2].startsWith 'punctuation.definition.comment'
+        comment = true
+      else if token.scopes.length > 2 and token.scopes[2] is 'storage.type.class.todo'
+        todo = true
+    return null
+
+  processTodoLine: (line, editor, grammar) ->
+    {tokens} = grammar.tokenizeLine line.trim()
+    comment = @getTodoComment tokens
+    if comment
+      if comment.match /\[#\d+\]/
         atom.notifications.addError 'Story already created', {icon: 'gear'}
       else
         editor.moveToEndOfLine()
         TrackerUtils.createStory @projectData.project.id,
-        {name: name, story_type: 'chore'}, (data) ->
+        {name: comment, story_type: 'chore'}, (data) ->
           msg = "Created story \"#{data.name}\" [##{data.id}]"
           atom.notifications.addSuccess msg, {icon: 'gear'}
           editor.insertText " [##{data.id}]"
     else
-      atom.notifications.addWarning "No TODO in \"#{line}\""
+      atom.notifications.addWarning "Not a TODO comment line"
 
   consumeStatusBar: (statusBar) ->
     @statusBarTile = statusBar.addRightTile item: new StatusBarView, priority: 5
