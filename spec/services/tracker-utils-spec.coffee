@@ -2,8 +2,6 @@ nock = require 'nock'
 
 TrackerUtils = require '../../lib/services/tracker-utils'
 
-AUTH_FAIL_MSG = 'Not authenticated, please double-check your Tracker API Token in the package settings'
-
 describe 'TrackerUtils', ->
   options = null
   url = null
@@ -54,11 +52,11 @@ describe 'TrackerUtils', ->
     it 'should show an error if the request times out', ->
       done = false
       spyOn(atom.notifications, 'addError').andCallFake (arg, opts) ->
-        expect(arg).toEqual 'Failed to connect to Pivotal Tracker'
-        expect(opts).toEqual {icon: 'radio-tower'}
+        expect(arg).toEqual TrackerUtils.CONNECT_FAIL_MSG
+        expect(opts.icon).toEqual 'radio-tower'
         done = true
       nock(@url, {reqheaders: @options.headers}).get(@options.path)
-        .socketDelay(3000).reply(500)
+        .socketDelay(TrackerUtils.TIMEOUT * 2).reply(500)
       runs ->
         TrackerUtils.makeGetRequest @options, null, null, null
       waitsFor (-> done), 'calls to be complete'
@@ -135,11 +133,11 @@ describe 'TrackerUtils', ->
     it 'should show an error if the request times out', ->
       done = false
       spyOn(atom.notifications, 'addError').andCallFake (arg, opts) ->
-        expect(arg).toEqual 'Failed to connect to Pivotal Tracker'
-        expect(opts).toEqual {icon: 'radio-tower'}
+        expect(arg).toEqual TrackerUtils.CONNECT_FAIL_MSG
+        expect(opts.icon).toEqual 'radio-tower'
         done = true
       nock(@url, {reqheaders: @options.headers}).put(@options.path)
-        .socketDelay(3000).reply(500)
+        .socketDelay(TrackerUtils.TIMEOUT * 2).reply(500)
       runs ->
         TrackerUtils.makePutRequest @options, {}
       waitsFor (-> done), 'calls to be complete', 100
@@ -147,7 +145,7 @@ describe 'TrackerUtils', ->
     it 'should show an error if authentication fails', ->
       done = false
       spyOn(atom.notifications, 'addError').andCallFake (arg, opts) ->
-        expect(arg).toEqual AUTH_FAIL_MSG
+        expect(arg).toEqual TrackerUtils.AUTH_FAIL_MSG
         expect(opts).toEqual {icon: 'lock'}
         done = true
       nock(@url, {reqheaders: @options.headers}).put(@options.path).reply(403)
@@ -179,11 +177,11 @@ describe 'TrackerUtils', ->
     it 'should show an error if the request times out', ->
       done = false
       spyOn(atom.notifications, 'addError').andCallFake (arg, opts) ->
-        expect(arg).toEqual 'Failed to connect to Pivotal Tracker'
-        expect(opts).toEqual {icon: 'radio-tower'}
+        expect(arg).toEqual TrackerUtils.CONNECT_FAIL_MSG
+        expect(opts.icon).toEqual 'radio-tower'
         done = true
       nock(@url, {reqheaders: @options.headers}).post(@options.path)
-        .socketDelay(3000).reply(500)
+        .socketDelay(TrackerUtils.TIMEOUT * 2).reply(500)
       runs ->
         TrackerUtils.makePostRequest @options, {}
       waitsFor (-> done), 'calls to be complete', 100
@@ -191,7 +189,7 @@ describe 'TrackerUtils', ->
     it 'should show an error if authentication fails', ->
       done = false
       spyOn(atom.notifications, 'addError').andCallFake (arg, opts) ->
-        expect(arg).toEqual AUTH_FAIL_MSG
+        expect(arg).toEqual TrackerUtils.AUTH_FAIL_MSG
         expect(opts).toEqual {icon: 'lock'}
         done = true
       nock(@url, {reqheaders: @options.headers}).post(@options.path).reply(403)

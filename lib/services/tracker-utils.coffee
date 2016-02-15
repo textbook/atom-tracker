@@ -5,6 +5,7 @@ module.exports =
   AUTH_FAIL_MSG: 'Not authenticated, please double-check your Tracker API ' +
     'Token in the package settings'
   CONNECT_FAIL_MSG: 'Failed to connect to Pivotal Tracker'
+  TIMEOUT: 2500
 
   defaultOptions: ->
     options =
@@ -46,79 +47,52 @@ module.exports =
       success
 
   startStory: (story) ->
-    options = @defaultOptions()
-    options.path = "/services/v5/projects/#{story.project_id}/stories/#{story.id}"
-    @makePutRequest options, {current_state: 'started'},
+    @updateStory story, {current_state: 'started'},
       "Failed to start story \"#{story.name}\".",
-      (-> atom.notifications.addSuccess "Started story \"#{story.name}\"")
+      "Started story \"#{story.name}\""
 
   finishStory: (story) ->
+    finishState = 'finished'
+    if story.story_type is 'chore'
+      finishState = 'accepted'
+    @updateStory story, {current_state: finishState},
+      "Failed to finish story \"#{story.name}\".",
+      "Finished story \"#{story.name}\""
+
+  updateStory: (story, new_state, errorMsg, successMsg) ->
     options = @defaultOptions()
     options.path = "/services/v5/projects/#{story.project_id}/stories/#{story.id}"
-    @makePutRequest options, {current_state: 'finished'},
-      "Failed to finish story \"#{story.name}\".",
-      (-> atom.notifications.addSuccess "Finished story \"#{story.name}\"")
+    @makePutRequest options, new_state, errorMsg, ->
+      atom.notifications.addSuccess successMsg
 
-  # TODO: Remove duplication from makeXXXRequest methods [#113687029]
   makePostRequest: (options, data, errMessage, success, failure) ->
+    options.method = 'POST'
     postData = JSON.stringify data
     options.headers['Content-Type'] = 'application/json'
     options.headers['Content-Length'] = Buffer.byteLength postData
-    options.method = 'POST'
-    req = https.request options, (res) =>
-      if res.statusCode is 200 and success
-        data = []
-        res.setEncoding 'utf8'
-        res.on 'data', (chunk) -> data.push(chunk)
-        res.on 'end', -> success JSON.parse(data.join '')
-      else if res.statusCode isnt 200
-        if res.statusCode is 403
-          atom.notifications.addError @AUTH_FAIL_MSG, {icon: 'lock'}
-        else
-          atom.notifications.addError errMessage
-        failure?(res)
-    req.on 'error', (err) =>
-      atom.notifications.addError @CONNECT_FAIL_MSG, {icon: 'radio-tower'}
-      failure?(err)
-    req.setTimeout 2500, =>
-      atom.notifications.addError @CONNECT_FAIL_MSG, {icon: 'radio-tower'}
-      req.abort()
-    req.write postData
-    req.end()
+    @makeRequest options, postData, errMessage, success, failure
 
   makePutRequest: (options, data, errMessage, success, failure) ->
-    options.headers['Content-Type'] = 'application/json'
     options.method = 'PUT'
-    req = https.request options, (res) =>
-      res.on('data', (data) -> console.log data)
-      if res.statusCode is 200
-        success?(res)
-      else
-        if res.statusCode is 403
-          atom.notifications.addError @AUTH_FAIL_MSG, {icon: 'lock'}
-        else
-          atom.notifications.addError errMessage
-        failure?(res)
-    req.on('error', (err) =>
-      atom.notifications.addError @CONNECT_FAIL_MSG, {icon: 'radio-tower'}
-      failure?(err)
-    )
-    req.setTimeout(2500, =>
-      atom.notifications.addError @CONNECT_FAIL_MSG,
-        {icon: 'radio-tower'}
-      req.abort()
-    )
-    req.write JSON.stringify data
-    req.end()
+    postData = JSON.stringify data
+    options.headers['Content-Type'] = 'application/json'
+    @makeRequest options, postData, errMessage, success, failure
 
   makeGetRequest: (options, errMessage, success, failure) ->
     options.method = 'GET'
+    @makeRequest options, null, errMessage, success, failure
+
+  makeRequest: (options, postData, errMessage, success, failure) ->
     req = https.request options, (res) =>
       if res.statusCode is 200 and success
         data = []
         res.setEncoding 'utf8'
         res.on 'data', (chunk) -> data.push(chunk)
-        res.on 'end', -> success JSON.parse(data.join '')
+        res.on 'end', ->
+          if data.length > 0
+            success JSON.parse(data.join '')
+          else
+            success()
       else if res.statusCode isnt 200
         if res.statusCode is 403
           atom.notifications.addError @AUTH_FAIL_MSG, {icon: 'lock'}
@@ -126,9 +100,12 @@ module.exports =
           atom.notifications.addError errMessage
         failure res if failure
     req.on 'error', (err) =>
-      atom.notifications.addError @CONNECT_FAIL_MSG, {icon: 'radio-tower'}
-      failure?(err)
-    req.setTimeout 2500, =>
+      atom.notifications.addError @CONNECT_FAIL_MSG,
+        {icon: 'radio-tower', detail: err.message}
+      failure? err
+    req.setTimeout @TIMEOUT, =>
       atom.notifications.addError @CONNECT_FAIL_MSG, {icon: 'radio-tower'}
       req.abort()
+    if postData
+      req.write postData
     req.end()
