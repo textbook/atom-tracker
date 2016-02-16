@@ -153,17 +153,16 @@ describe "AtomTracker", ->
         getBuffer:
           jasmine.createSpy('getBuffer').andReturn {
             getLines: jasmine.createSpy('getLines').andReturn ['foo', 'bar']
-            file: {path: 'some/dir/demo.ext'}
           }
         getCursorBufferPosition:
           jasmine.createSpy('getCursorBufferPosition').andReturn {row: 1}
-      spyOn(atom.grammars, 'grammarForScopeName').andReturn {}
+        getGrammar: jasmine.createSpy('getGrammar').andReturn {}
       spyOn(AtomTracker, 'processTodoLine')
 
     it 'should get the appropriate grammar', ->
       spyOn(atom.workspace, 'getActiveTextEditor').andReturn @mockEditor
       AtomTracker.createTodoStory()
-      expect(atom.grammars.grammarForScopeName).toHaveBeenCalledWith 'source.ext'
+      expect(@mockEditor.getGrammar).toHaveBeenCalled()
 
     it 'should show an error if no editor is active', ->
       spyOn(atom.notifications, 'addError')

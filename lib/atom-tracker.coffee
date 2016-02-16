@@ -56,9 +56,8 @@ module.exports = AtomTracker =
     editor = atom.workspace.getActiveTextEditor()
     if editor
       buffer = editor.getBuffer()
-      ext = path.extname(buffer.file.path)
       line = buffer.getLines()[editor.getCursorBufferPosition().row]
-      grammar = atom.grammars.grammarForScopeName "source#{ext}"
+      grammar = editor.getGrammar()
       if grammar
         @processTodoLine line, editor, grammar
       else
