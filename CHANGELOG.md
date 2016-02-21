@@ -1,3 +1,7 @@
+## 0.0.9 - Include location in TODO stories
+* Include file name and line number in stories from comments
+* Various bugfixes and simplifications
+
 ## 0.0.8 - Respect grammars
 * When creating a TODO story, use the current grammar for comment/TODO
 
