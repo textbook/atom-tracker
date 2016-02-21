@@ -6,7 +6,7 @@ TrackerUtils = require '../services/tracker-utils'
 module.exports = class SelectStoryFinishListView extends SelectStoryListView
 
   initialize: (project) ->
-    super
+    super project
     TrackerUtils.getStartedStories project, @handleStories, (=> @panel?.hide())
 
   handleStories: (stories) =>

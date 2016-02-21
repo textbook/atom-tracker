@@ -23,11 +23,11 @@ describe 'SelectStoryListView', ->
       expect(@view.setItems).toHaveBeenCalledWith(stories)
 
     it 'should show a warning if there are no filtered stories', ->
-      spyOn(atom.notifications, 'addWarning')
-      @view.project = {name: 'foo'}
-      expected = 'No matching stories in the "foo" backlog'
+      spyOn(@view, 'setError')
+      @view.project = {name: 'Foo'}
       @view.handleStories []
-      expect(atom.notifications.addWarning).toHaveBeenCalledWith(expected)
+      expect(@view.setError).toHaveBeenCalledWith('No matching stories in ' +
+        'the Foo backlog')
 
 
   describe 'configureItem method', ->

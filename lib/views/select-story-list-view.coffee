@@ -10,8 +10,9 @@ module.exports = class SelectStoryListView extends SelectListView
 
   MAX_LEN: 75
 
-  initialize: ->
+  initialize: (project) ->
     super
+    @project = project
     @addClass 'overlay from-top tracker-story-list atom-tracker'
     @setLoading 'Fetching story list...'
 
@@ -22,11 +23,10 @@ module.exports = class SelectStoryListView extends SelectListView
     filtered = stories.filter @filterItems
     if filtered.length
       @setItems filtered
+    else if @project
+      @setError "No matching stories in the #{@project.name} backlog"
     else
       @panel?.hide()
-      if @project
-        atom.notifications.addWarning "No matching stories in the " +
-          "\"#{@project.name}\" backlog"
 
   reveal: (successCallback) ->
     @callback = successCallback
