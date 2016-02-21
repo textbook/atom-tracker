@@ -92,22 +92,27 @@ describe "AtomTracker", ->
     editor = null
     grammar = null
     line = null
+    location = null
 
     beforeEach ->
       AtomTracker.projectData = {project: {id: 1234567}}
       @grammar =
         tokenizeLine: jasmine.createSpy('tokenizeLine').andReturn {tokens: []}
       @line = 'TODO: take over the world'
+      @location = 'Where the comment was'
       spyOn atom.notifications, 'addSuccess'
       spyOn(TrackerUtils, 'createStory').andCallFake (projectId, story, func) ->
         expect(projectId).toEqual(1234567)
-        expect(story).toEqual({name: 'take over the world', story_type: 'chore'})
+        expect(story).toEqual
+          name: 'take over the world',
+          story_type: 'chore'
+          description: 'Where the comment was'
         func({name: 'take over the world', id: 123456789})
       spyOn(AtomTracker, 'insertNewId')
 
     it 'should tokenize the line', ->
       spyOn AtomTracker, 'getTodoComment'
-      AtomTracker.processTodoLine '  foo  ', @grammar
+      AtomTracker.processTodoLine '  foo  ', @grammar, @location
       expect(@grammar.tokenizeLine).toHaveBeenCalledWith 'foo'
 
     it 'should get the comment from the tokens', ->
@@ -133,7 +138,7 @@ describe "AtomTracker", ->
 
     it 'should call createStory and notify the user', ->
       spyOn(AtomTracker, 'getTodoComment').andReturn 'take over the world'
-      AtomTracker.processTodoLine @line, @grammar
+      AtomTracker.processTodoLine @line, @grammar, @location
       expect(TrackerUtils.createStory).toHaveBeenCalled()
       expect(atom.notifications.addSuccess).toHaveBeenCalledWith(
         'Created story "take over the world" [#123456789]', {icon: 'gear'}
@@ -141,7 +146,7 @@ describe "AtomTracker", ->
 
     it 'should update the active editor', ->
       spyOn(AtomTracker, 'getTodoComment').andReturn 'take over the world'
-      AtomTracker.processTodoLine @line, @grammar
+      AtomTracker.processTodoLine @line, @grammar, @location
       expect(AtomTracker.insertNewId).toHaveBeenCalledWith
         name: 'take over the world'
         id: 123456789
@@ -177,9 +182,10 @@ describe "AtomTracker", ->
     beforeEach ->
       @mockEditor =
         getBuffer:
-          jasmine.createSpy('getBuffer').andReturn {
+          jasmine.createSpy('getBuffer').andReturn
             getLines: jasmine.createSpy('getLines').andReturn ['foo', 'bar']
-          }
+            file:
+              path: 'some/dir/test.coffee'
         getCursorBufferPosition:
           jasmine.createSpy('getCursorBufferPosition').andReturn {row: 1}
         getGrammar: jasmine.createSpy('getGrammar').andReturn {}
@@ -201,7 +207,8 @@ describe "AtomTracker", ->
     it 'should process the active line', ->
       spyOn(atom.workspace, 'getActiveTextEditor').andReturn @mockEditor
       AtomTracker.createTodoStory()
-      expect(AtomTracker.processTodoLine).toHaveBeenCalledWith 'bar', {}
+      expect(AtomTracker.processTodoLine).toHaveBeenCalledWith 'bar', {},
+        'Comment location: `test.coffee 2`'
 
   describe 'getTodoComment method', ->
     commentScope = null

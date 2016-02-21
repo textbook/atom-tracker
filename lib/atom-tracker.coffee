@@ -56,10 +56,12 @@ module.exports = AtomTracker =
     editor = atom.workspace.getActiveTextEditor()
     if editor
       buffer = editor.getBuffer()
-      line = buffer.getLines()[editor.getCursorBufferPosition().row]
+      lineNo = editor.getCursorBufferPosition().row
+      line = buffer.getLines()[lineNo]
       grammar = editor.getGrammar()
       if grammar
-        @processTodoLine line, grammar
+        @processTodoLine line, grammar,
+          "Comment location: `#{path.basename buffer.file.path} #{lineNo + 1}`"
       else
         atom.notifications.addError 'Grammar definition required to create ' +
           'story from comment'
@@ -79,7 +81,7 @@ module.exports = AtomTracker =
         todo = true
     return null
 
-  processTodoLine: (line, grammar) ->
+  processTodoLine: (line, grammar, description) ->
     {tokens} = grammar.tokenizeLine line.trim()
     comment = @getTodoComment tokens
     if comment
@@ -87,7 +89,8 @@ module.exports = AtomTracker =
         atom.notifications.addError 'Story already created', {icon: 'gear'}
       else
         TrackerUtils.createStory @projectData.project.id,
-        {name: comment, story_type: 'chore'}, (data) =>
+        {name: comment, story_type: 'chore', description: description},
+        (data) =>
           atom.notifications.addSuccess "Created story \"#{data.name}\" " +
             "[##{data.id}]", {icon: 'gear'}
           @insertNewId data
