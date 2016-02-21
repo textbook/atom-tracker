@@ -24,8 +24,9 @@ module.exports = class SelectStoryListView extends SelectListView
       @setItems filtered
     else
       @panel?.hide()
-      errMsg = "No matching stories in the \"#{@project.name}\" backlog"
-      atom.notifications.addWarning errMsg
+      if @project
+        atom.notifications.addWarning "No matching stories in the " +
+          "\"#{@project.name}\" backlog"
 
   reveal: (successCallback) ->
     @callback = successCallback
