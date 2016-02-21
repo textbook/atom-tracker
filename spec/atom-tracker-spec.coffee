@@ -159,10 +159,17 @@ describe "AtomTracker", ->
       mockEditor =
         moveToEndOfLine: jasmine.createSpy 'moveToEndOfLine'
         insertText: jasmine.createSpy 'insertText'
+      fakeView = {fake: 'view'}
       spyOn(atom.workspace, 'getActiveTextEditor').andReturn mockEditor
+      spyOn(atom.views, 'getView').andReturn fakeView
+      spyOn(atom.commands, 'dispatch')
       AtomTracker.insertNewId {id: 123456789}
       expect(mockEditor.moveToEndOfLine).toHaveBeenCalled()
       expect(mockEditor.insertText).toHaveBeenCalledWith ' [#123456789]'
+      expect(atom.views.getView).toHaveBeenCalledWith mockEditor
+      expect(atom.commands.dispatch).toHaveBeenCalledWith fakeView,
+        'editor:toggle-line-comments'
+      expect(atom.commands.dispatch.callCount).toEqual(2)
 
   describe 'createTodoStory method', ->
     mockEditor = null

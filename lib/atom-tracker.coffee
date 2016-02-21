@@ -97,8 +97,11 @@ module.exports = AtomTracker =
   insertNewId: (data) ->
     editor = atom.workspace.getActiveTextEditor()
     if editor
+      view = atom.views.getView(editor)
+      atom.commands.dispatch view, 'editor:toggle-line-comments'
       editor.moveToEndOfLine()
       editor.insertText " [##{data.id}]"
+      atom.commands.dispatch view, 'editor:toggle-line-comments'
     else
       atom.notifications.addError 'Active editor required to insert ID'
 
