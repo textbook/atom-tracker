@@ -59,13 +59,13 @@ module.exports = AtomTracker =
       line = buffer.getLines()[editor.getCursorBufferPosition().row]
       grammar = editor.getGrammar()
       if grammar
-        @processTodoLine line, editor, grammar
+        @processTodoLine line, grammar
       else
-        msg = 'Grammar definition required to create story from comment'
-        atom.notifications.addError msg
+        atom.notifications.addError 'Grammar definition required to create ' +
+          'story from comment'
     else
-      msg = 'Active editor required to create story from comment'
-      atom.notifications.addError msg
+      atom.notifications.addError 'Active editor required to create story ' +
+        'from comment'
 
   getTodoComment: (tokens) ->
     comment = false
@@ -79,21 +79,28 @@ module.exports = AtomTracker =
         todo = true
     return null
 
-  processTodoLine: (line, editor, grammar) ->
+  processTodoLine: (line, grammar) ->
     {tokens} = grammar.tokenizeLine line.trim()
     comment = @getTodoComment tokens
     if comment
       if comment.match /\[#\d+\]/
         atom.notifications.addError 'Story already created', {icon: 'gear'}
       else
-        editor.moveToEndOfLine()
         TrackerUtils.createStory @projectData.project.id,
-        {name: comment, story_type: 'chore'}, (data) ->
-          msg = "Created story \"#{data.name}\" [##{data.id}]"
-          atom.notifications.addSuccess msg, {icon: 'gear'}
-          editor.insertText " [##{data.id}]"
+        {name: comment, story_type: 'chore'}, (data) =>
+          atom.notifications.addSuccess "Created story \"#{data.name}\" " +
+            "[##{data.id}]", {icon: 'gear'}
+          @insertNewId data
     else
       atom.notifications.addWarning "Not a TODO comment line"
+
+  insertNewId: (data) ->
+    editor = atom.workspace.getActiveTextEditor()
+    if editor
+      editor.moveToEndOfLine()
+      editor.insertText " [##{data.id}]"
+    else
+      atom.notifications.addError 'Active editor required to insert ID'
 
   consumeStatusBar: (statusBar) ->
     @statusBarTile = statusBar.addRightTile item: new StatusBarView, priority: 5
