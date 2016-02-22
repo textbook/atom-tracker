@@ -44,20 +44,22 @@ describe "AtomTracker", ->
       atom.commands.dispatch workspaceElement, 'atom-tracker:create-todo-story'
       expect(AtomTracker.createTodoStory).toHaveBeenCalled()
 
-  testCases = [
-    'atom-tracker.colorizeStatusBar'
-    'atom-tracker.showStatusBar'
-    'atom-tracker.velocityStatusBar'
-  ]
-
-  for testCase in testCases
+  parameterized = (testCase) ->
     describe "when the #{testCase} config is changed", ->
+      config = null
+
+      beforeEach ->
+        @config = "atom-tracker.#{testCase}"
 
       it 'refreshes the status bar', ->
-        atom.config.set testCase, true
+        atom.config.set @config, true
         spyOn(AtomTracker, 'refreshStatusBar')
-        atom.config.set testCase, false
+        atom.config.set @config, false
         expect(AtomTracker.refreshStatusBar).toHaveBeenCalled()
+
+  parameterized 'colorizeStatusBar'
+  parameterized 'showStatusBar'
+  parameterized 'velocityStatusBar'
 
   describe 'refreshStatusBar method', ->
     data = null

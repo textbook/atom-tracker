@@ -38,7 +38,7 @@ module.exports = AtomTracker =
     # Monitor configuration changes
     atom.config.onDidChange 'atom-tracker.showStatusBar',
       ({newValue, oldValue}) =>
-        @srefreshStatusBar()
+        @refreshStatusBar()
     atom.config.onDidChange 'atom-tracker.colorizeStatusBar',
       ({newValue, oldValue}) =>
         @refreshStatusBar()
@@ -50,6 +50,7 @@ module.exports = AtomTracker =
 
   refreshStatusBar: ->
     if @projectData
+      @statusBarTile.getItem().display atom.config.get 'atom-tracker.showStatusBar'
       @statusBarTile?.getItem().updateContent @projectData
 
   createTodoStory: ->
