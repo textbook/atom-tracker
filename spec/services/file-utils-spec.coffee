@@ -12,6 +12,16 @@ describe 'FileUtils', ->
     it 'should return the projectConfigFile configuration value', ->
       expect(FileUtils.configFile()).toEqual('dummyfile')
 
+  describe 'relativePath method', ->
+
+    it 'should return the path relative to the first project path', ->
+      spyOn(atom.project, 'getPaths').andReturn ['foo', 'bar']
+      expect(FileUtils.relativePath 'foo/bar/baz').toEqual 'bar/baz'
+
+    it 'should return the full path if there are no project paths', ->
+      spyOn(atom.project, 'getPaths').andReturn []
+      expect(FileUtils.relativePath 'foo/bar/baz').toEqual 'foo/bar/baz'
+
   describe 'rootFilepath method', ->
 
     beforeEach ->

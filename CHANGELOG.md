@@ -1,3 +1,8 @@
+## 0.1.0 - Add new stories
+* Add generic functionality for adding new stories
+* Use relative locations for new story comments
+* Support `FIXME` comments (bugs) as well as `TODO` (chores)
+
 ## 0.0.9 - Include location in TODO stories
 * Include file name and line number in stories from comments
 * Various bugfixes and simplifications

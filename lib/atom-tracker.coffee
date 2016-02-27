@@ -1,10 +1,9 @@
 {CompositeDisposable} = require 'atom'
 
-path = require 'path'
-
 FileUtils = require './services/file-utils'
 TrackerUtils = require './services/tracker-utils'
 
+StoryView = require './views/story-view'
 SelectProjectListView = require './views/select-project-list-view'
 SelectStoryStartListView = require './views/select-story-start-list-view'
 SelectStoryFinishListView = require './views/select-story-finish-list-view'
@@ -26,15 +25,16 @@ module.exports = AtomTracker =
     @state = state
     # Set up Atom Tracker commands
     @subscriptions = new CompositeDisposable
+
     @subscriptions.add atom.commands.add 'atom-workspace',
       'atom-tracker:create-config': => @createProjectConfig()
     @subscriptions.add atom.commands.add 'atom-workspace',
-      'atom-tracker:next-story': => @selectNextStory()
+      'atom-tracker:create-new-story': => @createNewStory()
     @subscriptions.add atom.commands.add 'atom-workspace',
       'atom-tracker:finish-story': => @finishCurrentStory()
-      'atom-tracker:next-story': => @selectNextStory()
     @subscriptions.add atom.commands.add 'atom-workspace',
-      'atom-tracker:create-todo-story': => @createTodoStory()
+      'atom-tracker:next-story': => @selectNextStory()
+
     # Monitor configuration changes
     atom.config.onDidChange 'atom-tracker.showStatusBar',
       ({newValue, oldValue}) =>
@@ -49,54 +49,67 @@ module.exports = AtomTracker =
     @readProjectConfig()
 
   refreshStatusBar: ->
-    if @projectData
+    if @projectData and @statusBarTile
       @statusBarTile.getItem().display atom.config.get 'atom-tracker.showStatusBar'
-      @statusBarTile?.getItem().updateContent @projectData
+      @statusBarTile.getItem().updateContent @projectData
 
-  createTodoStory: ->
-    editor = atom.workspace.getActiveTextEditor()
-    if editor
-      buffer = editor.getBuffer()
-      lineNo = editor.getCursorBufferPosition().row
-      line = buffer.getLines()[lineNo]
-      grammar = editor.getGrammar()
-      if grammar
-        @processTodoLine line, grammar,
-          "Comment location: `#{path.basename buffer.file.path} #{lineNo + 1}`"
+  createNewStory: ->
+    if @projectData
+      editor = atom.workspace.getActiveTextEditor()
+      if editor
+        buffer = editor.getBuffer()
+        grammar = editor.getGrammar()
+        lineNo = editor.getCursorBufferPosition().row
+        line = buffer?.getLines()[lineNo]
+        if line
+          @processTodoLine line, editor, "Comment location: " +
+            "`#{FileUtils.relativePath buffer.file.path} #{lineNo + 1}`"
       else
-        atom.notifications.addError 'Grammar definition required to create ' +
-          'story from comment'
-    else
-      atom.notifications.addError 'Active editor required to create story ' +
-        'from comment'
+        new StoryView @projectData
 
-  getTodoComment: (tokens) ->
+  getTodoComment: (tokens, commentType) ->
     comment = false
-    todo = false
+    match = false
     for token in tokens
-      if comment and todo
+      if comment and match
         return token.value.trim()
-      else if token.scopes.length > 2 and token.scopes[2].startsWith 'punctuation.definition.comment'
+      else if @commentToken token
         comment = true
-      else if token.scopes.length > 2 and token.scopes[2] is 'storage.type.class.todo'
-        todo = true
+      else if @commentTypeToken token, commentType
+        match = true
     return null
 
-  processTodoLine: (line, grammar, description) ->
+  commentToken: (token) ->
+    if token and token.scopes and token.scopes.length > 2
+      return token.scopes[2].startsWith 'punctuation.definition.comment'
+    return false
+
+  commentTypeToken: (token, commentType) ->
+    if token and token.scopes and token.scopes.length > 2
+      return token.scopes[2] is commentType
+    return false
+
+  processTodoLine: (line, editor, description) ->
+    grammar =  editor.getGrammar()
     {tokens} = grammar.tokenizeLine line.trim()
-    comment = @getTodoComment tokens
-    if comment
-      if comment.match /\[#\d+\]/
-        atom.notifications.addError 'Story already created', {icon: 'gear'}
-      else
-        TrackerUtils.createStory @projectData.project.id,
-        {name: comment, story_type: 'chore', description: description},
-        (data) =>
-          atom.notifications.addSuccess "Created story \"#{data.name}\" " +
-            "[##{data.id}]", {icon: 'gear'}
-          @insertNewId data
-    else
-      atom.notifications.addWarning "Not a TODO comment line"
+    lineTypes = [
+      {storyType: 'chore', commentType: 'storage.type.class.todo', icon: 'gear'}
+      {storyType: 'bug', commentType: 'storage.type.class.fixme', icon: 'bug'}
+    ]
+    for {storyType, commentType, icon} in lineTypes
+      comment = @getTodoComment tokens, commentType
+      if comment
+        if comment.match /\[#\d+\]/
+          atom.notifications.addError 'Story already created', {icon: icon}
+          return
+        else
+          story =
+            story_type: storyType
+            name: comment
+            description: description
+          new StoryView @projectData, story, (data) => @insertNewId data
+          return
+    new StoryView @projectData
 
   insertNewId: (data) ->
     editor = atom.workspace.getActiveTextEditor()

@@ -5,17 +5,17 @@
 @import "ui-variables";
 
 .atom-tracker {
-  
-  // Use Tracker theme colours for story type
-  .icon-bug {
+
+  // Use Tracker theme colours for story type icons
+  .icon-bug::before {
     color: #d87350;
   }
 
-  .icon-gear {
+  .icon-gear::before {
     color: #939592;
   }
 
-  .icon-star {
+  .icon-star::before {
     color: #e0c85e;
   }
 }
@@ -30,6 +30,32 @@
   .badge {
     margin-left: @component-icon-padding;
     vertical-align: baseline;
+  }
+}
+
+.tracker-story{
+  background-color: @base-background-color;
+  padding: @component-padding;
+
+  .tracker-story-section {
+    padding: @component-padding !important;
+    width: 100%;
+
+    span {
+      display: inline-block;
+      float: left;
+      padding: @component-padding;
+
+      &.story-type-icon {
+        padding-left: @component-icon-padding;
+        padding-right: 0;
+        padding-top: @component-padding + @component-icon-padding;
+      }
+
+      &.story-name {
+        width: 50%;
+      }
+    }
   }
 }
 

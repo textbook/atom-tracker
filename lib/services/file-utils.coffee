@@ -10,6 +10,12 @@ module.exports =
     if not filename
       filename = @configFile()
     path.join(atom.project.getPaths()[0], filename)
+    
+  relativePath: (filepath) ->
+    paths = atom.project.getPaths()
+    if paths.length > 0
+      return path.relative paths[0], filepath
+    return filepath
 
   readCsonFile: (path, success, failure) ->
     CSON.readFile path, (error, results) ->

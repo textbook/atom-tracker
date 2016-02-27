@@ -23,6 +23,10 @@
         }
         {'type': 'separator'}
         {
+          'label': 'Create New Story'
+          'command': 'atom-tracker:create-new-story'
+        }
+        {
           'label': 'Select Next Story'
           'command': 'atom-tracker:next-story'
         }
