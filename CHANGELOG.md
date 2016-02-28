@@ -1,3 +1,9 @@
+## 0.1.3 - Update package.json
+* Provide correct link for bug reports
+
+## 0.1.2 - Initial publication
+* Now publicly available via http://atom.io/packages
+
 ## 0.1.1 - Show title in select lists
 * Add placeholder text when selecting story/project
 

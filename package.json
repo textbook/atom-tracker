@@ -5,6 +5,7 @@
   "description": "Integrate Pivotal Tracker with Atom.",
   "keywords": [],
   "repository": "https://github.com/textbook/atom-tracker",
+  "bugs": "https://www.pivotaltracker.com/n/projects/1520307",
   "license": "MIT",
   "engines": {
     "atom": ">=1.0.0 <2.0.0"
