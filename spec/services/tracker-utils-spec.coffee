@@ -295,3 +295,14 @@ describe 'TrackerUtils', ->
       runs ->
         TrackerUtils.finishStory @story
       waitsFor (-> done), 'calls to be complete', 100
+
+  describe 'appropriateIcon method', ->
+
+    it 'should return star as a default', ->
+      expect(TrackerUtils.appropriateIcon 'foo').toEqual 'star'
+
+    it 'should return bug for a bug story', ->
+      expect(TrackerUtils.appropriateIcon 'bug').toEqual 'bug'
+
+    it 'should return gear for a chore story', ->
+      expect(TrackerUtils.appropriateIcon 'chore').toEqual 'gear'

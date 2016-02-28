@@ -62,7 +62,7 @@ class StoryView extends View
     el = this.find selector
     el.removeClass (index, css) ->
       return css.match(/\b(icon-\S+)/g or []).join ' '
-    el.addClass 'icon-' + @appropriateIcon()
+    el.addClass 'icon-' + TrackerUtils.appropriateIcon @currentType()
 
   createStory: ->
     @story.name = @storyTitleInput.getText()
@@ -76,22 +76,12 @@ class StoryView extends View
   createSuccess: (data, callback) ->
     atom.notifications.addSuccess "Created #{data.story_type} " +
       "\"#{data.name}\" [##{data.id}]", {
-        icon: @appropriateIcon data.story_type
+        icon: TrackerUtils.appropriateIcon data.story_type
       }
     callback? data
 
   currentType: ->
     @storyType[0].selectedOptions[0].value
-
-  appropriateIcon: (storyType) ->
-    if not storyType
-      storyType = @currentType()
-    successIcon = 'star'
-    if storyType is 'bug'
-      successIcon = 'bug'
-    else if storyType is 'chore'
-      successIcon = 'gear'
-    return successIcon
 
   validateStory: (story) ->
     if not story.name

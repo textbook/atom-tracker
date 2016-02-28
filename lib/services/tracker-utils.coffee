@@ -12,6 +12,14 @@ module.exports =
       headers: {'X-TrackerToken': atom.config.get 'atom-tracker.trackerToken'}
       host: 'www.pivotaltracker.com'
 
+  appropriateIcon: (storyType) ->
+    successIcon = 'star'
+    if storyType is 'bug'
+      successIcon = 'bug'
+    else if storyType is 'chore'
+      successIcon = 'gear'
+    return successIcon
+
   getProjectDetails: (membershipSummary, success, failure) ->
     # Get the details for the specified project
     options = @defaultOptions()

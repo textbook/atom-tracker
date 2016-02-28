@@ -28,24 +28,6 @@ describe 'StoryView', ->
         'Story type required to create story'
       )
 
-  describe 'appropriateIcon method', ->
-
-    it 'should use the current type if none is provided', ->
-      spyOn(@view, 'currentType')
-
-      @view.appropriateIcon()
-
-      expect(@view.currentType).toHaveBeenCalled()
-
-    it 'should return star as a default', ->
-      expect(@view.appropriateIcon 'foo').toEqual 'star'
-
-    it 'should return bug for a bug story', ->
-      expect(@view.appropriateIcon 'bug').toEqual 'bug'
-
-    it 'should return gear for a chore story', ->
-      expect(@view.appropriateIcon 'chore').toEqual 'gear'
-
   describe 'createStory method', ->
 
     beforeEach ->
@@ -88,12 +70,12 @@ describe 'StoryView', ->
     beforeEach ->
       @data = {story_type: 'foo', id: 123456789, name: 'bar'}
       spyOn(atom.notifications, 'addSuccess')
-      spyOn(@view, 'appropriateIcon').andReturn 'baz'
+      spyOn(TrackerUtils, 'appropriateIcon').andReturn 'baz'
 
     it 'should show a success notification with the appropriate icon', ->
       @view.createSuccess @data
 
-      expect(@view.appropriateIcon).toHaveBeenCalled()
+      expect(TrackerUtils.appropriateIcon).toHaveBeenCalledWith 'foo'
       expect(atom.notifications.addSuccess).toHaveBeenCalledWith(
         'Created foo "bar" [#123456789]', {icon: 'baz'}
       )
@@ -111,7 +93,7 @@ describe 'StoryView', ->
         addClass: jasmine.createSpy('addClass')
         removeClass: null
       spyOn(@view, 'find').andReturn @finder
-      spyOn(@view, 'appropriateIcon').andReturn 'bar'
+      spyOn(TrackerUtils, 'appropriateIcon').andReturn 'bar'
 
     it 'should find the element for the specified selector', ->
       spyOn(@finder, 'removeClass')
@@ -129,8 +111,9 @@ describe 'StoryView', ->
 
     it 'should add the appropriate icon class', ->
       spyOn(@finder, 'removeClass')
+      spyOn(@view, 'currentType').andReturn 'foo'
 
       @view.updateIcon 'chore'
 
-      expect(@view.appropriateIcon).toHaveBeenCalled()
+      expect(TrackerUtils.appropriateIcon).toHaveBeenCalledWith 'foo'
       expect(@finder.addClass).toHaveBeenCalledWith('icon-bar')
