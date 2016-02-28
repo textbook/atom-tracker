@@ -10,7 +10,7 @@ see [its own Tracker][2] and [the CI builds][4].
 You can start stories in the backlog and finish started stories directly from
 the editor:
 
-![Starting a story](https://github.com/textbook/atom-tracker/blob/master/resources/start-story.gif?raw=true)
+![Finishing a story](https://github.com/textbook/atom-tracker/blob/master/resources/finish-story.gif?raw=true)
 
 ## Generate stories from comments
 

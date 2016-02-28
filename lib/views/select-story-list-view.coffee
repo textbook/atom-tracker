@@ -3,6 +3,8 @@
 FileUtils = require '../services/file-utils'
 TrackerUtils = require '../services/tracker-utils'
 
+# FIXME Views aren't being destroyed when no longer required [#114634305]
+
 module.exports = class SelectStoryListView extends SelectListView
   callback: null
   panel: null
@@ -27,6 +29,9 @@ module.exports = class SelectStoryListView extends SelectListView
       @setError "No matching stories in the #{@project.name} backlog"
     else
       @panel?.hide()
+
+  setPlaceholder: (text) ->
+    this.find('.editor.mini')[0].getModel().setPlaceholderText text
 
   reveal: (successCallback) ->
     @callback = successCallback

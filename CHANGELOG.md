@@ -1,3 +1,6 @@
+## 0.1.1 - Show title in select lists
+* Add placeholder text when selecting story/project
+
 ## 0.1.0 - Add new stories
 * Add generic functionality for adding new stories
 * Use relative locations for new story comments

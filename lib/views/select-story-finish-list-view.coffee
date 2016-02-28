@@ -7,6 +7,7 @@ module.exports = class SelectStoryFinishListView extends SelectStoryListView
 
   initialize: (project) ->
     super project
+    @setPlaceholder 'Finish the selected story'
     TrackerUtils.getStartedStories project, @handleStories, (=> @panel?.hide())
 
   handleStories: (stories) =>

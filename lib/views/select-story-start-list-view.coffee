@@ -7,6 +7,7 @@ module.exports = class SelectStoryStartListView extends SelectStoryListView
 
   initialize: (project) ->
     super project
+    @setPlaceholder 'Start the selected story'
     TrackerUtils.getUnstartedStories project, @handleStories, (=> @panel?.hide())
 
   filterItems: (story) ->

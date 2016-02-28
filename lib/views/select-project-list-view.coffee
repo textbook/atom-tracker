@@ -12,6 +12,9 @@ module.exports = class SelectProjectListView extends SelectListView
     super
     @addClass('overlay from-top tracker-project-list')
     @setLoading 'Fetching project list...'
+    this.find('.editor.mini')[0].getModel().setPlaceholderText(
+      'Link the selected project'
+    )
     TrackerUtils.getProjects ((projects) => @setItems projects),
       (=> @panel?.hide())
 
