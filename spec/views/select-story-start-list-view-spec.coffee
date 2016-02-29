@@ -12,12 +12,21 @@ describe 'SelectStoryStartListView', ->
     expect(TrackerUtils.getUnstartedStories).toHaveBeenCalled()
 
   describe 'confirmed method', ->
+    item = null
+
+    beforeEach ->
+      @item =
+        foo: 'bar'
 
     it 'should call startStory with the selected item', ->
       spyOn(TrackerUtils, 'startStory')
-      item = {foo: 'bar'}
-      @view.confirmed item
-      expect(TrackerUtils.startStory).toHaveBeenCalledWith(item)
+      @view.confirmed @item
+      expect(TrackerUtils.startStory).toHaveBeenCalledWith @item
+
+    it 'should show the information on the started story', ->
+      spyOn(TrackerUtils, 'showStoryInfo')
+      @view.confirmed @item
+      expect(TrackerUtils.showStoryInfo).toHaveBeenCalledWith 'Starting', @item
 
   describe 'filterItems method', ->
 

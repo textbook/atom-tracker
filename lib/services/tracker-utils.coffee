@@ -1,11 +1,22 @@
 https = require 'https'
+marked = require 'marked'
+{$} = require('atom-space-pen-views')
 
 module.exports =
 
   AUTH_FAIL_MSG: 'Not authenticated, please double-check your Tracker API ' +
     'Token in the package settings'
   CONNECT_FAIL_MSG: 'Failed to connect to Pivotal Tracker'
+  DETAIL_SELECTOR: '.info.has-detail > .content > .detail.item > .detail-content'
   TIMEOUT: 2500
+
+  showStoryInfo: (event, story) ->
+    message = atom.notifications.addInfo "<strong>#{event}</strong>: #{story.name}",
+      detail: 'replace me'
+      dismissable: true
+      icon: @appropriateIcon story.story_type
+    el = $(@DETAIL_SELECTOR)
+    el.empty().append $(marked (story.description or '*No description.*'))
 
   defaultOptions: ->
     options =

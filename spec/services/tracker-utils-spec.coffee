@@ -1,4 +1,6 @@
+marked = require 'marked'
 nock = require 'nock'
+{$} = require 'atom-space-pen-views'
 
 TrackerUtils = require '../../lib/services/tracker-utils'
 
@@ -306,3 +308,28 @@ describe 'TrackerUtils', ->
 
     it 'should return gear for a chore story', ->
       expect(TrackerUtils.appropriateIcon 'chore').toEqual 'gear'
+
+  describe 'showStoryInfo method', ->
+    story = null
+
+    beforeEach ->
+      spyOn(atom.notifications, 'addInfo')
+      @story =
+        description: '**markdown** *formatted*'
+        name: 'foo'
+        story_type: 'chore'
+
+    it 'should show an info notification', ->
+      TrackerUtils.showStoryInfo 'Testing', @story
+      expect(atom.notifications.addInfo).toHaveBeenCalledWith '<strong>Testing</strong>: foo',
+        detail: 'replace me'
+        dismissable: true
+        icon: 'gear'
+
+    it 'should replace the notification details with formatted HTML', ->
+      expectedHtml = '<p><strong>markdown</strong> <em>formatted</em></p>'
+      spied = spyOn($.fn, 'empty').andReturn
+        append: (val) ->
+          expect(val[0].outerHTML).toEqual expectedHtml
+      TrackerUtils.showStoryInfo 'Testing', @story
+      expect(spied).toHaveBeenCalled()
