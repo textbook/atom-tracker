@@ -88,3 +88,9 @@ describe 'FileUtils', ->
         handler('foo', null)
       FileUtils.readCsonFile 'path', @success, @failure
       expect(@failure).toHaveBeenCalledWith('foo')
+
+    it 'should not call the success function on failure', ->
+      spyOn(CSON, 'readFile').andCallFake (path, handler) ->
+        handler('foo', null)
+      FileUtils.readCsonFile 'path', @success
+      expect(@success).not.toHaveBeenCalled()
