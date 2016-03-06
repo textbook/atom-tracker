@@ -1,3 +1,6 @@
+## 0.2.0 - Auto-start next available story
+* If some stories are available, automatically start the next one
+
 ## 0.1.3 - Update package.json
 * Provide correct link for bug reports
 

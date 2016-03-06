@@ -10,5 +10,6 @@
 'atom-workspace':
   'ctrl-alt-l': 'atom-tracker:create-config'
   'ctrl-alt-j': 'atom-tracker:next-story'
+  'shift-ctrl-alt-j': 'atom-tracker:next-story-auto'
   'ctrl-alt-k': 'atom-tracker:finish-story'
   'ctrl-alt-n': 'atom-tracker:create-new-story'

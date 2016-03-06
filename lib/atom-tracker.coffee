@@ -34,6 +34,8 @@ module.exports = AtomTracker =
       'atom-tracker:finish-story': => @finishCurrentStory()
     @subscriptions.add atom.commands.add 'atom-workspace',
       'atom-tracker:next-story': => @selectNextStory()
+    @subscriptions.add atom.commands.add 'atom-workspace',
+      'atom-tracker:next-story-auto': => @selectNextStoryAuto()
 
     # Monitor configuration changes
     atom.config.onDidChange 'atom-tracker.showStatusBar',
@@ -131,28 +133,40 @@ module.exports = AtomTracker =
       @statusBarTile.getItem().display false
 
   selectNextStory: ->
+    if @validateProjectData()
+      new SelectStoryStartListView(
+        @projectData.project,
+        @state.atomTrackerViewState
+      ).reveal()
+
+  validateProjectData: ->
     if atom.project.getPaths().length > 0
       if @projectData
-        new SelectStoryStartListView(
-          @projectData.project,
-          @state.atomTrackerViewState
-        ).reveal()
+        return true
       else
         atom.notifications.addWarning NO_TRACKER, {icon: 'graph'}
     else
       atom.notifications.addWarning NO_PROJECT, {icon: 'graph'}
+    return false
+
+  selectNextStoryAuto: ->
+    if @validateProjectData()
+      TrackerUtils.getUnstartedStories @projectData.project,
+        @autostartStory
+
+  autostartStory: (data) ->
+    if data.length is 0
+      atom.notifications.addWarning 'No stories currently available to start',
+        {icon: 'graph'}
+    else
+      TrackerUtils.startStory data[0]
 
   finishCurrentStory: ->
-    if atom.project.getPaths().length > 0
-      if @projectData
-        new SelectStoryFinishListView(
-          @projectData.project,
-          @state.atomTrackerViewState
-        ).reveal()
-      else
-        atom.notifications.addWarning NO_TRACKER, {icon: 'graph'}
-    else
-      atom.notifications.addWarning NO_PROJECT, {icon: 'graph'}
+    if @validateProjectData()
+      new SelectStoryFinishListView(
+        @projectData.project,
+        @state.atomTrackerViewState
+      ).reveal()
 
   createProjectConfig: ->
     if atom.project.getPaths().length > 0

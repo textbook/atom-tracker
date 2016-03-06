@@ -1,6 +1,6 @@
 AtomTracker = require '../lib/atom-tracker'
-TrackerUtils = require '../lib//services/tracker-utils'
 
+TrackerUtils = require '../lib//services/tracker-utils'
 StoryView = require '../lib/views/story-view'
 
 # Use the command `window:run-package-specs` (cmd-alt-ctrl-p) to run specs.
@@ -38,6 +38,13 @@ describe "AtomTracker", ->
       spyOn(AtomTracker, 'selectNextStory')
       atom.commands.dispatch workspaceElement, 'atom-tracker:next-story'
       expect(AtomTracker.selectNextStory).toHaveBeenCalled()
+
+  describe 'when the atom-tracker:next-story-auto event is triggered', ->
+
+    it 'should call selectNextStoryAuto', ->
+      spyOn(AtomTracker, 'selectNextStoryAuto')
+      atom.commands.dispatch workspaceElement, 'atom-tracker:next-story-auto'
+      expect(AtomTracker.selectNextStoryAuto).toHaveBeenCalled()
 
   describe 'when the atom-tracker:finish-story event is triggered', ->
 
@@ -198,3 +205,61 @@ describe "AtomTracker", ->
       token =
         scopes: [null, null, 'foo.bar.baz']
       expect(AtomTracker.commentTypeToken token, 'foo.bar.baz').toBeTruthy()
+
+  describe 'validateProjectData method', ->
+
+    it 'should show a warning and return false if there is no active project path', ->
+      spyOn(atom.project, 'getPaths').andReturn {length: 0}
+      spyOn(atom.notifications, 'addWarning')
+      result = AtomTracker.validateProjectData()
+      expect(atom.notifications.addWarning).toHaveBeenCalledWith(
+        'Atom Tracker requires an active Atom project', {icon: 'graph'}
+      )
+      expect(result).toBeFalsy()
+
+    it 'should show a warning and return false if there is no project data', ->
+      spyOn(atom.project, 'getPaths').andReturn {length: 1}
+      AtomTracker.projectData = null
+      spyOn(atom.notifications, 'addWarning')
+      result = AtomTracker.validateProjectData()
+      expect(atom.notifications.addWarning).toHaveBeenCalledWith(
+        'Atom Tracker is not configured for this project', {icon: 'graph'}
+      )
+      expect(result).toBeFalsy()
+
+    it 'should return true otherwise', ->
+      spyOn(atom.project, 'getPaths').andReturn {length: 1}
+      AtomTracker.projectData = {}
+      result = AtomTracker.validateProjectData()
+      expect(result).toBeTruthy()
+
+  describe 'selectNextStoryAuto method', ->
+
+    beforeEach ->
+      spyOn(AtomTracker, 'validateProjectData').andReturn true
+
+    it 'should call validated the project data', ->
+      spyOn(TrackerUtils, 'getUnstartedStories')
+      AtomTracker.selectNextStoryAuto()
+      expect(AtomTracker.validateProjectData).toHaveBeenCalled()
+
+    it 'should get unstarted stories', ->
+      spyOn(TrackerUtils, 'getUnstartedStories')
+      AtomTracker.projectData = {project: {}}
+      AtomTracker.selectNextStoryAuto()
+      expect(TrackerUtils.getUnstartedStories).toHaveBeenCalledWith {},
+        AtomTracker.autostartStory
+
+  describe 'autostartStory method', ->
+
+    it 'should show a warning if no stories are available', ->
+      spyOn(atom.notifications, 'addWarning')
+      AtomTracker.autostartStory []
+      expect(atom.notifications.addWarning).toHaveBeenCalledWith(
+        'No stories currently available to start', {icon: 'graph'}
+      )
+
+    it 'should start the first story if some are available', ->
+      spyOn(TrackerUtils, 'startStory')
+      AtomTracker.autostartStory [{foo: 'bar'}, {bar: 'baz'}]
+      expect(TrackerUtils.startStory).toHaveBeenCalledWith {foo: 'bar'}

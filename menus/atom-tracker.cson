@@ -27,8 +27,12 @@
           'command': 'atom-tracker:create-new-story'
         }
         {
-          'label': 'Select Next Story'
+          'label': 'Select Story to Start'
           'command': 'atom-tracker:next-story'
+        }
+        {
+          'label': 'Auto-Select Next Story'
+          'command': 'atom-tracker:next-story-auto'
         }
         {
           'label': 'Finish Current Story'

@@ -109,15 +109,15 @@ module.exports =
         res.on 'data', (chunk) -> data.push(chunk)
         res.on 'end', ->
           if data.length > 0
-            success JSON.parse(data.join '')
+            success? JSON.parse(data.join '')
           else
-            success()
+            success?()
       else if res.statusCode isnt 200
         if res.statusCode is 403
           atom.notifications.addError @AUTH_FAIL_MSG, {icon: 'lock'}
         else
           atom.notifications.addError errMessage
-        failure res if failure
+        failure? res
     req.on 'error', (err) =>
       atom.notifications.addError @CONNECT_FAIL_MSG,
         {icon: 'radio-tower', detail: err.message}
