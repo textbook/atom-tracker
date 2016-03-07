@@ -23,5 +23,6 @@ module.exports = class SelectStoryStartListView extends SelectStoryListView
 
   confirmed: (item) ->
     @panel?.hide()
-    TrackerUtils.showStoryInfo 'Starting', item
+    if atom.config.get 'atom-tracker.showStoryDetails'
+      TrackerUtils.showStoryInfo 'Starting', item
     TrackerUtils.startStory item

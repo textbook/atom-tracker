@@ -17,16 +17,25 @@ describe 'SelectStoryStartListView', ->
     beforeEach ->
       @item =
         foo: 'bar'
+      spyOn(TrackerUtils, 'startStory')
 
     it 'should call startStory with the selected item', ->
-      spyOn(TrackerUtils, 'startStory')
       @view.confirmed @item
       expect(TrackerUtils.startStory).toHaveBeenCalledWith @item
 
-    it 'should show the information on the started story', ->
+    it 'should show the information on the started story if needed', ->
       spyOn(TrackerUtils, 'showStoryInfo')
+      spyOn(atom.config, 'get').andReturn true
       @view.confirmed @item
+      expect(atom.config.get).toHaveBeenCalledWith 'atom-tracker.showStoryDetails'
       expect(TrackerUtils.showStoryInfo).toHaveBeenCalledWith 'Starting', @item
+
+    it 'should not show the information if not needed', ->
+      spyOn(TrackerUtils, 'showStoryInfo')
+      spyOn(atom.config, 'get').andReturn false
+      @view.confirmed @item
+      expect(atom.config.get).toHaveBeenCalledWith 'atom-tracker.showStoryDetails'
+      expect(TrackerUtils.showStoryInfo).not.toHaveBeenCalled()
 
   describe 'filterItems method', ->
 

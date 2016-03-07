@@ -30,10 +30,16 @@ module.exports = config =
     order: 5
     title: 'Show Estimates in Story Selector'
     type: 'boolean'
+  showStoryDetails:
+    default: true
+    description: 'When starting a story, show a pop-up containing its description.'
+    order: 6
+    title: 'Show Started Story Description'
+    type: 'boolean'
   projectConfigFile:
     default: '.tracker.cson'
     description: 'This file will store the project-specific configuration, ' +
       'e.g. project Tracker ID, in your root project directory.'
-    order: 6
+    order: 7
     title: 'Project Configuration File Name'
     type: 'string'

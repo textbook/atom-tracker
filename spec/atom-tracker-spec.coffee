@@ -19,7 +19,8 @@ describe "AtomTracker", ->
 
   it 'should define the expected configuration', ->
     for config in ['trackerToken', 'showStatusBar', 'colorizeStatusBar',
-        'velocityStatusBar', 'showFeatureEstimate', 'projectConfigFile']
+        'velocityStatusBar', 'showFeatureEstimate', 'projectConfigFile',
+        'showStoryDetails']
       expect(AtomTracker.config[config]).not.toBe(undefined)
 
   it 'should read the project configuration', ->

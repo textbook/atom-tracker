@@ -1,3 +1,6 @@
+## 0.3.1 - Add configuration option for story info
+* Allow the user to choose whether or not to see the story info when starting
+
 ## 0.3.0 - Erase comment when story finished
 * If a story is created from a comment, erase it when the story is finished
 
