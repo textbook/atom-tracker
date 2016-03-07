@@ -1,3 +1,6 @@
+## 0.3.0 - Erase comment when story finished
+* If a story is created from a comment, erase it when the story is finished
+
 ## 0.2.0 - Auto-start next available story
 * If some stories are available, automatically start the next one
 

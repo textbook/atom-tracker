@@ -39,14 +39,11 @@ module.exports = AtomTracker =
 
     # Monitor configuration changes
     atom.config.onDidChange 'atom-tracker.showStatusBar',
-      ({newValue, oldValue}) =>
-        @refreshStatusBar()
+      ({newValue, oldValue}) => @refreshStatusBar()
     atom.config.onDidChange 'atom-tracker.colorizeStatusBar',
-      ({newValue, oldValue}) =>
-        @refreshStatusBar()
+      ({newValue, oldValue}) => @refreshStatusBar()
     atom.config.onDidChange 'atom-tracker.velocityStatusBar',
-      ({newValue, oldValue}) =>
-        @refreshStatusBar()
+      ({newValue, oldValue}) => @refreshStatusBar()
     # Initialise with current project data
     @readProjectConfig()
 

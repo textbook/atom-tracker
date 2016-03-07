@@ -1,4 +1,7 @@
 CSON = require 'season'
+fs = require 'fs'
+jschardet = require 'jschardet'
+path = require 'path'
 
 FileUtils = require '../../lib/services/file-utils'
 
@@ -94,3 +97,44 @@ describe 'FileUtils', ->
         handler('foo', null)
       FileUtils.readCsonFile 'path', @success
       expect(@success).not.toHaveBeenCalled()
+
+  describe 'eraseComment method', ->
+    fakeFile = null
+    story = null
+
+    beforeEach ->
+      @fakeFile =
+        toString: jasmine.createSpy('toString').andReturn
+          replace: jasmine.createSpy('replace').andReturn 'world'
+      spyOn(atom.project, 'getPaths').andReturn ['foo/bar']
+      spyOn(fs, 'readFile').andCallFake (filepath, callback) =>
+        callback(null, @fakeFile)
+      spyOn(fs, 'writeFile')
+      spyOn(jschardet, 'detect').andReturn
+        encoding: 'utf8'
+      spyOn(path, 'join').andReturn 'hello'
+      @story =
+        description: 'Stuff\nComment location: `bar/baz 42`\nOther stuff'
+        id: 123456789
+
+    it 'should do nothing if the story description contains no location', ->
+      @story.description = 'nothing matching the regular expression'
+      result = FileUtils.eraseComment @story
+      expect(result).toBeFalsy()
+
+    it 'should get the absolute path to the file with the comment', ->
+      FileUtils.eraseComment @story
+      expect(path.join).toHaveBeenCalledWith 'foo/bar', 'bar/baz'
+
+    it 'should open the file and convert it to a string', ->
+      FileUtils.eraseComment @story
+      expect(fs.readFile).toHaveBeenCalled()
+      expect(jschardet.detect).toHaveBeenCalledWith @fakeFile
+      expect(@fakeFile.toString).toHaveBeenCalledWith 'utf8'
+
+    it 'should replace the content and write out the result', ->
+      FileUtils.eraseComment @story
+      expect(@fakeFile.toString().replace).toHaveBeenCalledWith(
+        /^.+\[\#123456789\].*\n/m, ''
+      )
+      expect(fs.writeFile).toHaveBeenCalledWith 'hello', 'world', 'utf8'

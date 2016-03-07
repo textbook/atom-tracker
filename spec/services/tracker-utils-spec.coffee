@@ -2,6 +2,7 @@ marked = require 'marked'
 nock = require 'nock'
 {$} = require 'atom-space-pen-views'
 
+FileUtils = require '../../lib/services/file-utils'
 TrackerUtils = require '../../lib/services/tracker-utils'
 
 describe 'TrackerUtils', ->
@@ -277,6 +278,7 @@ describe 'TrackerUtils', ->
       @options.headers['Content-Type'] = 'application/json'
       @story = {project_id: 1234567, id: 890, name: 'foo'}
       @putPath = '/services/v5/projects/1234567/stories/890'
+      spyOn(FileUtils, 'eraseComment')
 
     it 'should call the appropriate method', ->
       spyOn(TrackerUtils, 'makePutRequest')
@@ -297,6 +299,12 @@ describe 'TrackerUtils', ->
       runs ->
         TrackerUtils.finishStory @story
       waitsFor (-> done), 'calls to be complete', 100
+
+    it 'should erase the comment', ->
+      spyOn(TrackerUtils, 'updateStory').andCallFake (_, __, ___, success) ->
+        success()
+      TrackerUtils.finishStory {}
+      expect(FileUtils.eraseComment).toHaveBeenCalledWith {}
 
   describe 'appropriateIcon method', ->
 

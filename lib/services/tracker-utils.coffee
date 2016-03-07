@@ -1,6 +1,8 @@
 https = require 'https'
 marked = require 'marked'
-{$} = require('atom-space-pen-views')
+{$} = require 'atom-space-pen-views'
+
+FileUtils = require './file-utils'
 
 module.exports =
 
@@ -67,22 +69,22 @@ module.exports =
 
   startStory: (story) ->
     @updateStory story, {current_state: 'started'},
-      "Failed to start story \"#{story.name}\".",
-      "Started story \"#{story.name}\""
+      "Failed to start story \"#{story.name}\".", ->
+        atom.notifications.addSuccess "Started story \"#{story.name}\""
 
   finishStory: (story) ->
     finishState = 'finished'
     if story.story_type is 'chore'
       finishState = 'accepted'
     @updateStory story, {current_state: finishState},
-      "Failed to finish story \"#{story.name}\".",
-      "Finished story \"#{story.name}\""
+      "Failed to finish story \"#{story.name}\".", ->
+        FileUtils.eraseComment story
+        atom.notifications.addSuccess "Finished story \"#{story.name}\""
 
-  updateStory: (story, new_state, errorMsg, successMsg) ->
+  updateStory: (story, new_state, errorMsg, success) ->
     options = @defaultOptions()
     options.path = "/services/v5/projects/#{story.project_id}/stories/#{story.id}"
-    @makePutRequest options, new_state, errorMsg, ->
-      atom.notifications.addSuccess successMsg
+    @makePutRequest options, new_state, errorMsg, success
 
   makePostRequest: (options, data, errMessage, success, failure) ->
     options.method = 'POST'
