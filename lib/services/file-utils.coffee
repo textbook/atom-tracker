@@ -6,7 +6,6 @@ path = require 'path'
 module.exports =
 
   eraseComment: (story) ->
-    # FIXME Fails if description is undefined [#120998221]
     location = story.description.match(/^comment location: `(\S+) (\d+)`$/mi)
     if not location
       return
