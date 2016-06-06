@@ -78,7 +78,8 @@ module.exports =
       finishState = 'accepted'
     @updateStory story, {current_state: finishState},
       "Failed to finish story \"#{story.name}\".", ->
-        FileUtils.eraseComment story
+        if story.description
+          FileUtils.eraseComment story
         atom.notifications.addSuccess "Finished story \"#{story.name}\""
 
   updateStory: (story, new_state, errorMsg, success) ->
