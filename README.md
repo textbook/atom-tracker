@@ -2,8 +2,19 @@
 
 [![Build Status][3]][4]
 
-Integrates [Pivotal Tracker][1] neatly into Atom. For more information on the project's current status,
-see [its own Tracker][2] and [the CI builds][4].
+Integrates [Pivotal Tracker][1] neatly into Atom. For more information on the
+project's current status, see [its own Tracker][2] and [the CI builds][4].
+
+## Installation and configuration
+
+Once the package is installed, go to its settings page and enter your Tracker
+API token to allow it to link to your projects. If you don't know your token,
+see the guidance on where to find it in the settings.
+
+You can then use Packages -> Atom Tracker -> Link Project to create a
+`.tracker.cson` file in the current project root, which tells the package which
+Tracker project to update (*note*: adding this to your `.gitignore` is
+recommended).
 
 ## Start and finish stories
 
