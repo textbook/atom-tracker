@@ -303,8 +303,15 @@ describe 'TrackerUtils', ->
     it 'should erase the comment', ->
       spyOn(TrackerUtils, 'updateStory').andCallFake (_, __, ___, success) ->
         success()
+      story = {description: 'hello'}
+      TrackerUtils.finishStory story
+      expect(FileUtils.eraseComment).toHaveBeenCalledWith story
+
+    it 'should not attempt to erase if the story has no description', ->
+      spyOn(TrackerUtils, 'updateStory').andCallFake (_, __, ___, success) ->
+        success()
       TrackerUtils.finishStory {}
-      expect(FileUtils.eraseComment).toHaveBeenCalledWith {}
+      expect(FileUtils.eraseComment).not.toHaveBeenCalled()
 
   describe 'appropriateIcon method', ->
 
