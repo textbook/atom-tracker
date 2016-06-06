@@ -1,3 +1,9 @@
+## 0.3.3 - Improve README
+ * Show explicit installation instructions
+
+## 0.3.2 - Fix issue 2
+ * Don't attempt to delete a comment if the story has no description
+
 ## 0.3.1 - Add configuration option for story info
 * Allow the user to choose whether or not to see the story info when starting
 
